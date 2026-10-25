@@ -1,33 +1,146 @@
-# Agent Notch
+<p align="center">
+  <img src="docs/images/banner.png" alt="Agent Notch: your AI coding agents, live in the notch" width="100%">
+</p>
 
-A macOS notch app that shows live activity of AI coding agents (Claude Code, Codex CLI, gentle-shell = Pi + gentle-pi) and lets you Allow / Deny permission requests right from the notch. Each agent gets a pixel-art mascot, an accent line tinted by the working agent, a step-by-step task list and a short "done" glow.
+<p align="center">
+  <a href="https://github.com/enderdev01/agent-notch/releases/latest"><img src="https://img.shields.io/github/v/release/enderdev01/agent-notch?style=flat-square&color=111111&label=release" alt="Release"></a>
+  <img src="https://img.shields.io/badge/macOS-14%2B-111111?style=flat-square" alt="macOS 14+">
+  <img src="https://img.shields.io/badge/agents-Claude%20Code%20%C2%B7%20Codex%20%C2%B7%20Pi-111111?style=flat-square" alt="Works with Claude Code, Codex and Pi">
+  <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-111111?style=flat-square" alt="MIT license"></a>
+</p>
 
-**Requirements:** macOS 14+ and `jq` for the hook installer (`brew install jq`). Built for notched MacBooks; on screens without a notch it draws a 200 pt pill at the top center instead.
+<p align="center">
+  <a href="https://github.com/enderdev01/agent-notch/releases/latest"><b>Download</b></a> ·
+  <a href="#what-you-get">What you get</a> ·
+  <a href="#works-with">Works with</a> ·
+  <a href="#install">Install</a> ·
+  <a href="#how-it-works">How it works</a> ·
+  <a href="#details">Details</a>
+</p>
 
-## Architecture
+Agent Notch turns the MacBook notch into a live dashboard for your AI coding agents. See what each agent is doing, follow its task list step by step, and **Allow / Deny** permission requests without leaving what you are working on. When an agent finishes, you see its answer; when it needs you, the notch says so.
 
-```
- Claude Code ──hooks──┐                      ┌── SessionStore (@MainActor)
- Codex CLI  ──hooks──┤  agent-notch-hook     │      sessions, approval queue
-                      ├─ (bash, curl+jq) ──►  HookServer (127.0.0.1:47823) ──► NotchRootView
- Pi extension ───────┘   POST /event/{agent}   │                              (collapsed / hover / approval)
-   (fetch)               POST /approve/{agent} ◄┘  holds connection until you decide
-```
+It runs locally, listens only on `127.0.0.1`, and never sends anything anywhere.
 
-Folders: `Domain/` (agent, session, approval, decision) - `Application/` (SessionStore) - `Infrastructure/` (HTTP server, notch panel) - `UI/` (SwiftUI notch) - `App/` (entry point, menu bar item).
+## What you get
+
+### Follow the work, step by step
+
+When an agent keeps a task list, every step shows a spinner while it runs and a check when it is done, with the active step and an `n/m` counter. A timer runs while the agent works.
+
+<p align="center">
+  <img src="docs/images/steps.gif" alt="The collapsed notch showing a task list advancing step by step" width="340">
+</p>
+
+### Hover for the full picture
+
+Hover the notch to expand it: sessions grouped by agent, today's summary per agent (turns finished, failed, time worked), and, for the row under your pointer, the full prompt and reply in a card that never moves the list. **Copy reply** copies the whole answer. Click a row to jump to the terminal the agent runs in.
+
+<p align="center">
+  <img src="docs/images/detail.png" alt="The expanded notch with a session list and the detail card of the hovered row" width="440">
+</p>
+
+### Approve from the notch
+
+Permission requests appear right in the notch. **Allow** or **Deny** with the mouse or the keyboard, or hand it back to the terminal. Nothing is decided on your behalf: if you do nothing, the agent's own prompt takes over after a timeout.
+
+<p align="center">
+  <img src="docs/images/approval.png" alt="An approval card for a Bash command with Deny and Allow buttons" width="440">
+</p>
+
+### Know when it is your turn
+
+For a few seconds after a turn ends, one readable line of the agent's last reply shows under the notch. If that reply asks you something, it turns amber, the row says **Your turn** and the mascot gets an amber dot. Failures show a plain-language error in red, such as "Rate limit reached".
+
+<p align="center">
+  <img src="docs/images/peek.png" alt="The notch showing an amber line with the agent's question" width="400">
+</p>
+
+### Mascots with moods
+
+Each agent has a pixel-art mascot that reacts to what it is doing: working, waiting for you, done, failed, and drowsy or asleep when idle.
+
+<p align="center">
+  <img src="docs/images/mascots.png" alt="Mascots for Claude Code, Codex and gentle-shell in six states" width="700">
+</p>
+
+## Works with
+
+| | Claude Code | Codex CLI | Pi / gentle-shell |
+|---|:---:|:---:|:---:|
+| Live status, timer and reply peek | ✅ | ✅ | ✅ |
+| Task list as steps | ✅ `TodoWrite` | ✅ `update_plan` (untested on real runs) | n/a |
+| Allow / Deny from the notch | ✅ | ✅ | ✅ risky `bash` commands only |
+| Failure state | ✅ | n/a | ✅ |
+| Click to focus the terminal | ✅ exact tab in Terminal.app and iTerm2 | ✅ same | ✅ app comes to front |
+
+Isolated Pi homes (`~/.gentle-shell/agent`, `~/.gentle-dot/agent`) get their own copy of the extension, installed only if that home exists.
 
 ## Install
 
-**From the DMG:** drag *Agent Notch* to Applications and open it, then connect your agents (the installer ships inside the app):
+**Requirements:** macOS 14+ and `jq` for the hook installer (`brew install jq`). Built for notched MacBooks; on screens without a notch it draws a 200 pt pill at the top center instead.
 
-```sh
-"/Applications/Agent Notch.app/Contents/Resources/scripts/install.sh" --dry-run   # preview the exact config changes
-"/Applications/Agent Notch.app/Contents/Resources/scripts/install.sh"             # copies the bridge, merges hooks, copies the Pi extension
+1. **[Download the DMG](https://github.com/enderdev01/agent-notch/releases/latest)** and drag *Agent Notch* to Applications.
+2. Open it. The build is **not notarized yet**, so macOS blocks the first launch: right-click the app, choose **Open**, and confirm.
+3. Connect your agents (the installer ships inside the app):
+
+   ```sh
+   "/Applications/Agent Notch.app/Contents/Resources/scripts/install.sh" --dry-run   # preview the exact config changes
+   "/Applications/Agent Notch.app/Contents/Resources/scripts/install.sh"             # copies the bridge, merges hooks, copies the Pi extension
+   ```
+
+4. Restart any running Claude Code / Codex / Pi session so it picks up the hooks. Codex may ask you to trust the new hooks.
+
+`uninstall.sh` (same folder) removes only the entries whose command contains `agent-notch-hook`, plus the copied files. Config files are backed up once as `*.bak-agent-notch`. The first click on a row asks for the macOS Automation permission, used to select the terminal tab.
+
+## How it works
+
+```mermaid
+flowchart LR
+    C["Claude Code"] -- hooks --> B["agent-notch-hook<br/>bash + curl + jq"]
+    X["Codex CLI"] -- hooks --> B
+    P["Pi / gentle-shell"] -- extension --> S
+    B -- "POST /event, /approve" --> S["Agent Notch<br/>127.0.0.1:47823"]
+    S --> N(["The notch"])
+    N -- "Allow / Deny" --> S
 ```
 
-Restart any running Claude Code / Codex / Pi session afterwards. If the build is not notarized (see *Releasing*), macOS blocks the first launch: right-click the app, choose *Open*, and confirm.
+Agents report lifecycle events to a tiny local HTTP server. Approvals hold the connection open until you decide, and the decision goes back in the agent's native format. If the app is not running, the bridge prints nothing and exits 0, so agents fall back to their normal terminal prompt.
 
-**From source:**
+## Details
+
+<details>
+<summary><b>Preferences and menu bar</b></summary>
+
+Pause approvals (everything falls back to the terminal), finish and approval sounds, sound volume, whether the idle mascot shows and how long until it falls asleep, how long the "Your turn" state lasts (Off / 2 / 5 / 15 / 30 minutes), launch at login (only works from the bundled `.app`), and quit. Changes apply immediately.
+
+`AGENT_NOTCH_REDUCE_MOTION=1` forces the Reduce Motion path for testing.
+
+</details>
+
+<details>
+<summary><b>How each agent integrates</b></summary>
+
+- **Claude Code**: hooks in `~/.claude/settings.json` (SessionStart, UserPromptSubmit, PreToolUse, PostToolUse, Notification, Stop, StopFailure -> `event`; PermissionRequest -> `approve`).
+- **Codex CLI**: hooks in `~/.codex/hooks.json` (same minus Notification and StopFailure, plus Interrupt).
+- **Pi (gentle-shell, Gentle Dot)**: `~/.pi/agent/extensions/agent-notch.ts` reports lifecycle events and gates risky `bash` commands (rm -rf, sudo, force push, chmod/chown 777, curl|sh, dd, mkfs; edit the list at the top of the file).
+
+Decisions are returned in the agent's native format. Allow/Deny answer the prompt; "Answer in terminal" (or a timeout after 110 s) hands control back to the agent's own prompt.
+
+</details>
+
+<details>
+<summary><b>Troubleshooting</b></summary>
+
+- **App not running / port busy**: check `curl http://127.0.0.1:47823/health` (should print `ok`). Override the port with `AGENT_NOTCH_PORT` (app and agents must agree).
+- **Nothing shows up**: restart the agent session after installing; confirm `~/.local/bin/agent-notch-hook` exists and `jq` is installed.
+- **Keyboard hints**: Return / Cmd-Delete work once the panel has focus (after you click it). The panel never steals focus on its own, so global shortcuts are intentionally not registered.
+- **Debug**: launch with `AGENT_NOTCH_DEBUG=1` to enable `GET /debug/state` and `POST /debug/resolve-all/{allow|deny}`.
+
+</details>
+
+<details>
+<summary><b>Build from source</b></summary>
 
 ```sh
 make app                          # builds build/Agent Notch.app (ad-hoc signed)
@@ -36,9 +149,14 @@ scripts/install.sh --dry-run
 make install
 ```
 
-`uninstall.sh` (next to `install.sh`) removes only entries whose command contains `agent-notch-hook`, plus the copied files. Config files are backed up once as `*.bak-agent-notch`.
+Folders: `Domain/` (agent, session, approval, decision) · `Application/` (SessionStore) · `Infrastructure/` (HTTP server, notch panel) · `UI/` (SwiftUI notch) · `App/` (entry point, menu bar item).
 
-## Releasing
+Mascot sprites live in `Sources/AgentNotch/Resources/Mascots/` and are copied into the app bundle by `make app`. Regenerate the raw art with `scripts/gen-mascots.sh` (APIMart; key read from the Keychain item `com.onilabs.oni.apimart`) and the app icon with `scripts/make-icon.py`.
+
+</details>
+
+<details>
+<summary><b>Releasing</b></summary>
 
 ```sh
 scripts/release.sh                # build/AgentNotch-<version>.dmg, ad-hoc signed (not notarized)
@@ -50,41 +168,9 @@ scripts/release.sh                # signs with the hardened runtime, notarizes a
 
 To publish on GitHub, create a release with the DMG attached and `docs/release-0.1.0.md` as its notes (`gh release create v0.1.0 build/AgentNotch-0.1.0.dmg --title "Agent Notch 0.1.0" --notes-file docs/release-0.1.0.md`).
 
-Notarization needs a paid Apple Developer Program account, a *Developer ID Application* certificate in your keychain, and a profile stored once with `xcrun notarytool store-credentials agent-notch --apple-id <id> --team-id <TEAMID> --password <app-specific-password>`. Bump `CFBundleShortVersionString` in `packaging/Info.plist` for each release. Regenerate the app icon with `scripts/make-icon.py`.
+Notarization needs a paid Apple Developer Program account, a *Developer ID Application* certificate in your keychain, and a profile stored once with `xcrun notarytool store-credentials agent-notch --apple-id <id> --team-id <TEAMID> --password <app-specific-password>`. Bump `CFBundleShortVersionString` in `packaging/Info.plist` for each release.
 
-## How each agent integrates
-
-- **Claude Code**: hooks in `~/.claude/settings.json` (SessionStart, UserPromptSubmit, PreToolUse, PostToolUse, Notification, Stop, StopFailure -> `event`; PermissionRequest -> `approve`).
-- **Codex CLI**: hooks in `~/.codex/hooks.json` (same minus Notification and StopFailure, plus Interrupt). Codex may require you to trust new hooks; review them when prompted.
-- **gentle-shell and Gentle Dot (Pi)**: `~/.pi/agent/extensions/agent-notch.ts` reports lifecycle events and gates risky `bash` commands (rm -rf, sudo, force push, chmod/chown 777, curl|sh, dd, mkfs; edit the list at the top of the file). Each Pi-based app with an isolated home (`~/.gentle-shell/agent`, `~/.gentle-dot/agent`) gets its own copy, installed only if that home exists.
-
-Decisions are returned in the agent's native format. Allow/Deny answer the prompt; "Answer in terminal" (or timeout after 110 s) hands control back to the agent's own prompt.
-
-## Mascots
-
-Each agent has a pixel-art mascot (Claude, Codex, gentle) that lives in the notch ears and reacts to state: working (per-agent rhythm), waiting for approval (shake + badge), done (hops + sparkles). Sprites live in `Sources/AgentNotch/Resources/Mascots/` and are copied into the app bundle by `make app`. Regenerate raw art with `scripts/gen-mascots.sh` (APIMart; key read from the Keychain item `com.onilabs.oni.apimart`).
-
-## Menu bar item
-
-Pause approvals (everything falls back to the terminal), play a sound when an agent finishes, launch at login (only works from the bundled `.app`), quit.
-
-## Troubleshooting
-
-- **App not running / port busy**: the bridge prints nothing and exits 0, so agents fall back to their normal terminal prompt. Check `curl http://127.0.0.1:47823/health` (should print `ok`). Override the port with `AGENT_NOTCH_PORT` (app and agents must agree).
-- **Nothing shows up**: restart the agent session after install; confirm `~/.local/bin/agent-notch-hook` exists and `jq` is installed.
-- **Keyboard hints**: Return / Cmd-Delete work once the panel has focus (after you click it); the panel never steals focus on its own, so global shortcuts are intentionally not registered.
-- **Debug**: launch with `AGENT_NOTCH_DEBUG=1` to enable `GET /debug/state` and `POST /debug/resolve-all/{allow|deny}`.
-
-## Info and preferences
-
-- **Peek**: for ~5 s after a turn ends, one readable line of the agent's last reply shows under the notch (markdown removed; amber when the reply ends asking you for something). Failures show a plain-language error in red (e.g. "Rate limit reached").
-- **Steps**: when an agent keeps a task list (Claude `TodoWrite`, Codex `update_plan`), the collapsed notch shows one icon per step (check, spinner, empty ring) with the active step and `n/m`; the expanded row lists every step.
-- **Timer**: `m:ss` in the right ear while an agent works, and in each session row.
-- **Hover the notch** to expand the session list. Hover a row to see the full prompt and reply (**Copy reply** button); click a row to focus the terminal the agent runs in (Terminal.app and iTerm2 select the exact tab; other terminals come to front; sessions without terminal info open the folder in Finder). The first click asks for the macOS Automation permission.
-- **Today's summary** per agent in the list header (`Today · ✓ 3 · ✕ 1 · 1h 20m`): turns finished, failed, and time worked (kept in UserDefaults, resets each day).
-- **Your turn**: when an agent's last reply asks you something, its row says "Your turn" (amber) and its mascot gets an amber dot until the next activity or for 5 minutes by default (menu: Off / 2 / 5 / 15 / 30 minutes).
-- **Preferences** live in the menu bar menu: finish and approval sounds, sound volume, whether the idle mascot shows, and how long until it falls asleep. They apply immediately.
-- `AGENT_NOTCH_REDUCE_MOTION=1` forces the Reduce Motion path for testing.
+</details>
 
 ## License
 
