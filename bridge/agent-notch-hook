@@ -1,0 +1,56 @@
+#!/usr/bin/env bash
+# agent-notch-hook <claude|codex|gentle> [event|approve]
+# Bridge between agent hooks and the Agent Notch app. Reads hook JSON on stdin.
+# Must never break the agent: always exits 0; prints only a PermissionRequest decision.
+
+PATH="$PATH:/usr/bin:/bin:/opt/homebrew/bin:/usr/local/bin"
+agent="${1:-}"
+mode="${2:-event}"
+base="http://127.0.0.1:${AGENT_NOTCH_PORT:-47823}"
+
+case "$agent" in
+  claude|codex|gentle) ;;
+  *) exit 0 ;;
+esac
+
+payload="$(cat 2>/dev/null)"
+
+# Which terminal the agent runs in, so a click on the notch can focus it. Failures just omit the headers.
+tty_of_ancestor() {
+  local pid=$$ i t
+  for i in 1 2 3 4 5 6 7 8; do
+    set -- $(ps -o ppid=,tty= -p "$pid" 2>/dev/null) || return
+    t="${2:-}"
+    case "$t" in ""|"??"|"?") ;; *) printf '/dev/%s' "$t"; return ;; esac
+    pid="${1:-}"
+    [ -z "$pid" ] || [ "$pid" -le 1 ] && return
+  done
+}
+ctx=()
+[ -n "${__CFBundleIdentifier:-}" ] && ctx+=(-H "X-AN-Bundle: $__CFBundleIdentifier")
+tty="$(tty_of_ancestor)"
+[ -n "$tty" ] && ctx+=(-H "X-AN-Tty: $tty")
+
+case "$mode" in
+  event)
+    printf '%s' "$payload" |
+      curl -s -m 1 -o /dev/null -X POST "${ctx[@]}" --data-binary @- "$base/event/$agent" >/dev/null 2>&1
+    exit 0
+    ;;
+  approve)
+    command -v jq >/dev/null 2>&1 || exit 0
+    response="$(printf '%s' "$payload" |
+      curl -s -m 115 -X POST "${ctx[@]}" --data-binary @- "$base/approve/$agent" 2>/dev/null)" || exit 0
+    decision="$(printf '%s' "$response" | jq -r '.decision // empty' 2>/dev/null)" || exit 0
+    case "$decision" in
+      allow)
+        printf '%s\n' '{"hookSpecificOutput":{"hookEventName":"PermissionRequest","decision":{"behavior":"allow"}}}'
+        ;;
+      deny)
+        printf '%s\n' '{"hookSpecificOutput":{"hookEventName":"PermissionRequest","decision":{"behavior":"deny","message":"Denied from Agent Notch"}}}'
+        ;;
+    esac
+    exit 0
+    ;;
+esac
+exit 0

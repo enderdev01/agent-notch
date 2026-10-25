@@ -1,0 +1,121 @@
+import AppKit
+import ServiceManagement
+
+/// Menu bar item with the few toggles the app needs.
+@MainActor
+final class StatusMenu: NSObject {
+    private let store: SessionStore
+    private let item = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
+    private let pauseItem = NSMenuItem(title: "Pause approvals (always fall back to terminal)", action: nil, keyEquivalent: "")
+    private let soundItem = NSMenuItem(title: "Play sound when an agent finishes", action: nil, keyEquivalent: "")
+    private let approvalSoundItem = NSMenuItem(title: "Play sound when approval is needed", action: nil, keyEquivalent: "")
+    private let idleItem = NSMenuItem(title: "Show mascot when idle", action: nil, keyEquivalent: "")
+    private let volumeItem = NSMenuItem(title: "Sound volume", action: nil, keyEquivalent: "")
+    private let sleepItem = NSMenuItem(title: "Mascot falls asleep after", action: nil, keyEquivalent: "")
+    private let yourTurnItem = NSMenuItem(title: "\"Your turn\" mark lasts", action: nil, keyEquivalent: "")
+    private let loginItem = NSMenuItem(title: "Launch at login", action: nil, keyEquivalent: "")
+
+    private static let volumeChoices: [(title: String, value: Double)] = [("Quiet", 0.15), ("Normal", 0.3), ("Loud", 0.6)]
+    private static let sleepChoices: [(title: String, value: Double)] = [("30 seconds", 30), ("1 minute", 60), ("3 minutes", 180)]
+    private static let yourTurnChoices: [(title: String, value: Double)] = [
+        ("Off", 0), ("2 minutes", 120), ("5 minutes", 300), ("15 minutes", 900), ("30 minutes", 1800),
+    ]
+
+    init(store: SessionStore) {
+        self.store = store
+        super.init()
+        item.button?.image = NSImage(systemSymbolName: "rectangle.topthird.inset.filled",
+                                     accessibilityDescription: "Agent Notch")
+        let menu = NSMenu()
+        pauseItem.target = self; pauseItem.action = #selector(togglePause)
+        soundItem.target = self; soundItem.action = #selector(toggleSound)
+        approvalSoundItem.target = self; approvalSoundItem.action = #selector(toggleApprovalSound)
+        idleItem.target = self; idleItem.action = #selector(toggleIdle)
+        loginItem.target = self; loginItem.action = #selector(toggleLogin)
+        volumeItem.submenu = choiceMenu(Self.volumeChoices, action: #selector(pickVolume(_:)))
+        sleepItem.submenu = choiceMenu(Self.sleepChoices, action: #selector(pickSleep(_:)))
+        yourTurnItem.submenu = choiceMenu(Self.yourTurnChoices, action: #selector(pickYourTurn(_:)))
+        let quit = NSMenuItem(title: "Quit Agent Notch", action: #selector(quit), keyEquivalent: "q")
+        quit.target = self
+        [pauseItem, .separator(), soundItem, approvalSoundItem, volumeItem, .separator(), idleItem, sleepItem,
+         yourTurnItem, .separator(), loginItem, .separator(), quit].forEach(menu.addItem)
+        menu.delegate = self
+        item.menu = menu
+    }
+
+    private func choiceMenu(_ choices: [(title: String, value: Double)], action: Selector) -> NSMenu {
+        let menu = NSMenu()
+        for choice in choices {
+            let entry = NSMenuItem(title: choice.title, action: action, keyEquivalent: "")
+            entry.target = self
+            entry.representedObject = choice.value
+            menu.addItem(entry)
+        }
+        return menu
+    }
+
+    /// Checkmark on the entry whose value matches the current preference.
+    private func mark(_ menu: NSMenu?, current: Double) {
+        menu?.items.forEach { entry in
+            entry.state = (entry.representedObject as? Double).map { abs($0 - current) < 0.001 } == true ? .on : .off
+        }
+    }
+
+    @objc private func toggleApprovalSound() { Preferences.approvalSoundEnabled.toggle() }
+    @objc private func toggleIdle() { Preferences.showIdleMascot.toggle() }
+
+    @objc private func pickVolume(_ sender: NSMenuItem) {
+        guard let value = sender.representedObject as? Double else { return }
+        Preferences.soundVolume = Float(value)
+    }
+
+    @objc private func pickYourTurn(_ sender: NSMenuItem) {
+        guard let value = sender.representedObject as? Double else { return }
+        Preferences.yourTurnFor = value
+    }
+
+    @objc private func pickSleep(_ sender: NSMenuItem) {
+        guard let value = sender.representedObject as? Double else { return }
+        Preferences.sleepAfter = value
+    }
+
+    @objc private func togglePause() {
+        store.approvalsPaused.toggle()
+        if store.approvalsPaused { store.resolveAll(decision: .terminal) }
+    }
+
+    @objc private func toggleSound() { Preferences.soundEnabled.toggle() }
+
+    @objc private func toggleLogin() {
+        do {
+            if SMAppService.mainApp.status == .enabled {
+                try SMAppService.mainApp.unregister()
+            } else {
+                try SMAppService.mainApp.register()
+            }
+        } catch {
+            let alert = NSAlert()
+            alert.messageText = "Could not change launch at login"
+            alert.informativeText = "\(error.localizedDescription)\n\nThis only works when running the bundled app (make app)."
+            alert.runModal()
+        }
+    }
+
+    @objc private func quit() { NSApp.terminate(nil) }
+}
+
+extension StatusMenu: NSMenuDelegate {
+    func menuNeedsUpdate(_ menu: NSMenu) {
+        pauseItem.state = store.approvalsPaused ? .on : .off
+        soundItem.state = Preferences.soundEnabled ? .on : .off
+        approvalSoundItem.state = Preferences.approvalSoundEnabled ? .on : .off
+        idleItem.state = Preferences.showIdleMascot ? .on : .off
+        mark(volumeItem.submenu, current: Double(Preferences.soundVolume))
+        mark(sleepItem.submenu, current: Preferences.sleepAfter)
+        mark(yourTurnItem.submenu, current: Preferences.yourTurnFor)
+        let bundled = Bundle.main.bundleURL.pathExtension == "app"
+        loginItem.isEnabled = bundled
+        loginItem.state = bundled && SMAppService.mainApp.status == .enabled ? .on : .off
+        loginItem.title = bundled ? "Launch at login" : "Launch at login (needs the .app bundle)"
+    }
+}

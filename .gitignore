@@ -1,0 +1,5 @@
+.build/
+build/
+.DS_Store
+# Raw generated mascot art (34 MB); only the processed sprites in Resources/Mascots are needed. Regenerate with scripts/gen-mascots.sh.
+Sources/AgentNotch/Resources/mascots-raw/
