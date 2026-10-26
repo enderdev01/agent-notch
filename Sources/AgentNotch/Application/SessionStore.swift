@@ -69,6 +69,7 @@ final class SessionStore: ObservableObject {
         case "UserPromptSubmit":
             session.status = .thinking
             session.asksUser = false
+            session.phase = nil
             session.turnStartedAt = Date()
             // A finished list belongs to the previous request; an unfinished one carries over.
             if session.steps.allSatisfy({ $0.state == .done }) { session.steps = [] }
@@ -87,6 +88,14 @@ final class SessionStore: ObservableObject {
                 onQuestionAsked?(session)
                 return
             }
+            if let report = event.phase {
+                // A phase report is bookkeeping, not a tool the user should see running; "clear" or an unknown phase drops it.
+                session.phase = OddPhase(rawValue: report)
+                session.status = .thinking
+                session.asksUser = false
+                if session.turnStartedAt == nil { session.turnStartedAt = Date() }
+                break
+            }
             session.status = .runningTool(event.toolName ?? "tool")
             session.asksUser = false
             if session.turnStartedAt == nil { session.turnStartedAt = Date() }
@@ -102,8 +111,10 @@ final class SessionStore: ObservableObject {
         case "Interrupt":
             // Codex reports Esc/interrupts; Claude does not, so `workingTimeout` still covers it.
             if session.status.isWorking { session.status = .idle; session.turnStartedAt = nil }
+            session.phase = nil
         case "StopFailure":
             session.status = .failed
+            session.phase = nil
             let text = ReplyText.error(event.message)
             session.lastMessage = text
             // Keep the raw code next to the friendly text in the detail view.
@@ -115,6 +126,7 @@ final class SessionStore: ObservableObject {
             // A failed turn may be followed by a plain Stop; keep the failure visible until the next prompt.
             if session.status == .failed { return }
             session.status = .done
+            session.phase = nil
             var snippet: ReplyText.Snippet?
             if let m = event.lastAssistantMessage, !m.isEmpty {
                 session.lastMessage = m

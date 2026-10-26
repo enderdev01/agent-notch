@@ -66,6 +66,8 @@ struct AgentSession: Identifiable, Equatable, Sendable {
     var asksUser = false
     /// The agent's current task list, in order; empty when it has none.
     var steps: [Step] = []
+    /// ODD phase the agent last reported in the current turn (Gentle Shell only); cleared when the turn ends.
+    var phase: OddPhase?
     /// Terminal the agent runs in, from the hook bridge; nil when unknown (click falls back to the folder).
     var terminal: TerminalRef?
 
