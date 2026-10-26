@@ -183,3 +183,9 @@ Notarization needs a paid Apple Developer Program account, a *Developer ID Appli
 MIT, see [LICENSE](LICENSE).
 
 Agent Notch is an independent project. It is not affiliated with or endorsed by Anthropic, OpenAI, or the Gentleman Programming / Gentle AI projects; "Claude Code", "Codex" and "gentle" are only used to name the tools it integrates with. The mascots are AI-generated pixel art (see `scripts/gen-mascots.sh`).
+
+<p align="center">
+  <a href="https://github.com/Gentleman-Programming/gentle-ai">
+    <img width="220" src="https://raw.githubusercontent.com/Gentleman-Programming/gentle-ai/main/docs/assets/brand/built-with-gentle-ai.png" alt="Built with Gentle-AI" />
+  </a>
+</p>
