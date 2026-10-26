@@ -40,10 +40,11 @@ enum HookPayloadDecoder {
         return AskedQuestion(text: text, options: options, more: items.count - 1)
     }
 
-    /// Claude `TodoWrite` sends `todos` [{content, activeForm, status}]; Codex `update_plan` sends `plan` [{step, status}].
+    /// Claude `TodoWrite` sends `todos` [{content, activeForm, status}]; Codex `update_plan` sends `plan` [{step, status}];
+    /// the Claude desktop app's task list (`update_plan` MCP tool) sends `items` [{content, status}].
     static func steps(toolInput: Any?) -> [Step]? {
         guard let dict = toolInput as? [String: Any] else { return nil }
-        guard let items = (dict["todos"] ?? dict["plan"]) as? [[String: Any]] else { return nil }
+        guard let items = (dict["todos"] ?? dict["plan"] ?? dict["items"]) as? [[String: Any]] else { return nil }
         return items.compactMap { item in
             let state: Step.State
             switch item["status"] as? String {
