@@ -13,7 +13,8 @@ from PIL import Image
 ROOT = Path(__file__).resolve().parent.parent / "Sources/AgentNotch/Resources"
 RAW, OUT = ROOT / "mascots-raw", ROOT / "Mascots"
 AGENTS = ["claude", "codex", "gentle"]
-VARIANTS = ["sleep", "work", "alert", "done", "blink", "drowsy", "error"]
+VARIANTS = ["sleep", "work", "alert", "done", "blink", "drowsy", "error",
+            "work-explore", "work-think", "work-check", "work-close"]
 SIZE = 128
 
 
