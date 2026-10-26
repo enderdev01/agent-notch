@@ -7,6 +7,7 @@ enum HookPayloadDecoder {
             return nil
         }
         let parsed = steps(toolInput: object["tool_input"])
+        let asked = question(toolName: object["tool_name"] as? String, toolInput: object["tool_input"])
         return HookEvent(
             agent: agent,
             name: object["hook_event_name"] as? String ?? "",
@@ -14,11 +15,21 @@ enum HookPayloadDecoder {
             cwd: object["cwd"] as? String,
             toolName: object["tool_name"] as? String,
             // A task-list update is shown as steps, not as raw JSON in the row.
-            toolSummary: parsed == nil ? summarize(toolInput: object["tool_input"]) : nil,
+            toolSummary: parsed == nil && asked == nil ? summarize(toolInput: object["tool_input"]) : nil,
             prompt: object["prompt"] as? String,
             message: (object["message"] as? String) ?? (object["error"] as? String),
             lastAssistantMessage: object["last_assistant_message"] as? String,
-            steps: parsed)
+            steps: parsed,
+            question: asked)
+    }
+
+    /// Claude `AskUserQuestion` sends `questions` [{question, header, options: [{label, description}], multiSelect}].
+    static func question(toolName: String?, toolInput: Any?) -> AskedQuestion? {
+        guard toolName == "AskUserQuestion", let dict = toolInput as? [String: Any],
+              let items = dict["questions"] as? [[String: Any]], let first = items.first,
+              let text = first["question"] as? String, !text.isEmpty else { return nil }
+        let options = (first["options"] as? [[String: Any]] ?? []).compactMap { $0["label"] as? String }
+        return AskedQuestion(text: text, options: options, more: items.count - 1)
     }
 
     /// Claude `TodoWrite` sends `todos` [{content, activeForm, status}]; Codex `update_plan` sends `plan` [{step, status}].

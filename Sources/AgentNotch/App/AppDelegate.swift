@@ -11,6 +11,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     func applicationDidFinishLaunching(_ notification: Notification) {
         store.onSessionFinished = { Sounds.finished($0.agent) }
         store.onApprovalRequested = { _ in Sounds.approvalNeeded() }
+        store.onQuestionAsked = { _ in Sounds.approvalNeeded() }
         store.askRetention = Preferences.yourTurnFor
         NotificationCenter.default.addObserver(forName: Preferences.changed, object: nil, queue: .main) { [store] _ in
             MainActor.assumeIsolated { store.askRetention = Preferences.yourTurnFor }

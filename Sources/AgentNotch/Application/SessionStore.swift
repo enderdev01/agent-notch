@@ -21,6 +21,8 @@ final class SessionStore: ObservableObject {
 
     /// Called when an agent starts waiting for an Allow/Deny decision.
     var onApprovalRequested: ((ApprovalRequest) -> Void)?
+    /// Called when an agent asks the user a question through its question tool.
+    var onQuestionAsked: ((AgentSession) -> Void)?
 
     static let approvalTimeout: Duration = .seconds(110)
     static let finishedRetention: TimeInterval = 30 * 60
@@ -72,6 +74,19 @@ final class SessionStore: ObservableObject {
             if session.steps.allSatisfy({ $0.state == .done }) { session.steps = [] }
             if let p = event.prompt, !p.isEmpty { session.lastMessage = p; session.prompt = p }
         case "PreToolUse":
+            if let asked = event.question {
+                // Claude is blocked on the user: show a question that needs them, not a running tool.
+                // The permission request for this tool arrives right after and repeats this event; ignore the repeat.
+                if session.status == .done, session.asksUser, session.lastMessage == asked.text { return }
+                session.status = .done
+                session.asksUser = askRetention > 0
+                session.lastMessage = asked.text
+                session.reply = asked.reply
+                sessions[key] = session
+                showPeek(Peek(agent: session.agent, text: asked.summary, isError: false, asksUser: session.asksUser))
+                onQuestionAsked?(session)
+                return
+            }
             session.status = .runningTool(event.toolName ?? "tool")
             session.asksUser = false
             if session.turnStartedAt == nil { session.turnStartedAt = Date() }
@@ -81,7 +96,9 @@ final class SessionStore: ObservableObject {
             if session.status != .waitingApproval { session.status = .thinking }
             if let steps = event.steps { session.steps = steps }
         case "Notification":
-            if let m = event.message, !m.isEmpty { session.lastMessage = m }
+            // While the user owes an answer, keep the question as the row's line instead of "Claude needs your permission…".
+            let waiting = session.asksUser && session.status == .done
+            if let m = event.message, !m.isEmpty, !waiting { session.lastMessage = m }
         case "Interrupt":
             // Codex reports Esc/interrupts; Claude does not, so `workingTimeout` still covers it.
             if session.status.isWorking { session.status = .idle; session.turnStartedAt = nil }

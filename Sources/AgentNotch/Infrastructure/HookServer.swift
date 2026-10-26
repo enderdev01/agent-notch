@@ -104,6 +104,18 @@ final class HookServer: @unchecked Sendable {
             conn.send(status: 200, body: "{\"decision\":\"terminal\"}")
             return
         }
+        if event.question != nil {
+            // Claude shows its own question UI, and an Allow from here would not carry the user's answers: hand it back.
+            // The preceding PreToolUse normally shows the question; ingest it here too in case that event was lost.
+            Task { @MainActor [store] in
+                store.ingest(event: HookEvent(
+                    agent: agent, name: "PreToolUse", sessionId: event.sessionId, cwd: event.cwd,
+                    toolName: event.toolName, toolSummary: nil, prompt: nil, message: nil, lastAssistantMessage: nil,
+                    question: event.question, terminal: terminal))
+            }
+            conn.send(status: 200, body: "{\"decision\":\"terminal\"}")
+            return
+        }
         let approval = ApprovalRequest(
             agent: agent,
             sessionId: event.sessionId,
