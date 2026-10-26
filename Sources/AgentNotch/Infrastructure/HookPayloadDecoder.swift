@@ -8,6 +8,7 @@ enum HookPayloadDecoder {
         }
         let parsed = steps(toolInput: object["tool_input"])
         let asked = question(toolName: object["tool_name"] as? String, toolInput: object["tool_input"])
+        let reported = phase(toolName: object["tool_name"] as? String, toolInput: object["tool_input"])
         return HookEvent(
             agent: agent,
             name: object["hook_event_name"] as? String ?? "",
@@ -15,12 +16,19 @@ enum HookPayloadDecoder {
             cwd: object["cwd"] as? String,
             toolName: object["tool_name"] as? String,
             // A task-list update is shown as steps, not as raw JSON in the row.
-            toolSummary: parsed == nil && asked == nil ? summarize(toolInput: object["tool_input"]) : nil,
+            toolSummary: parsed == nil && asked == nil && reported == nil ? summarize(toolInput: object["tool_input"]) : nil,
             prompt: object["prompt"] as? String,
             message: (object["message"] as? String) ?? (object["error"] as? String),
             lastAssistantMessage: object["last_assistant_message"] as? String,
             steps: parsed,
-            question: asked)
+            question: asked,
+            phase: reported)
+    }
+
+    /// Gentle Shell reports its ODD phase with the `gentle_odd_phase` tool: `{phase: "checking"}` or `{phase: "clear"}`.
+    static func phase(toolName: String?, toolInput: Any?) -> String? {
+        guard toolName == "gentle_odd_phase", let dict = toolInput as? [String: Any] else { return nil }
+        return dict["phase"] as? String
     }
 
     /// Claude `AskUserQuestion` sends `questions` [{question, header, options: [{label, description}], multiSelect}].

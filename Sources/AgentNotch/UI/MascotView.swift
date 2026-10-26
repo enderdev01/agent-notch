@@ -1,7 +1,9 @@
 import SwiftUI
 
 enum MascotMood: Hashable {
-    case sleeping, working, waiting, done, error
+    case sleeping, waiting, done, error
+    /// Working, in the ODD phase the agent reported (nil when it reported none).
+    case working(phase: OddPhase?)
     /// Awake and blinking right after activity, then drowsier until asleep (see `MascotBody` timings).
     case idle(since: Date)
 
@@ -101,7 +103,10 @@ private struct MascotBody: View {
         case .waiting: return "alert"
         case .done: return "done"
         case .error: return "error"
-        case .working: return Int(t / 0.3).isMultiple(of: 2) ? "work" : nil
+        case .working:
+            guard Int(t / 0.3).isMultiple(of: 2) else { return nil }
+            if case .working(let phase?) = mood, let group = phase.spriteGroup { return "work-\(group)" }
+            return "work"
         case .awake: return t.truncatingRemainder(dividingBy: 3.2) > 3.06 ? "blink" : nil
         case .drowsy(let p):
             let cycle = 2.4

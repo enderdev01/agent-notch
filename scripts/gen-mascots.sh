@@ -33,6 +33,10 @@ variant_prompt() {
     alert) echo "$SAME startled and asking for attention: wide open round eyes, small open mouth, both arms raised up in the air. $VARIANT_TAIL" ;;
     done)  echo "$SAME celebrating a finished task: happy closed ^ ^ eyes, big open smile, both arms raised high in victory, tiny pixel sparkles around. $VARIANT_TAIL" ;;
     error) echo "$SAME sad and upset because something failed: worried drooping eyebrows, wobbly frown, one small blue tear, shoulders slumped and arms hanging down. $VARIANT_TAIL" ;;
+    work-explore) echo "$SAME exploring: curious wide eyes peering ahead, holding a small magnifying glass up in one arm, other arm relaxed. $VARIANT_TAIL" ;;
+    work-think) echo "$SAME thinking hard: eyes looking up, one arm raised to the chin, a small empty thought bubble with a tiny pixel lightbulb floating above. $VARIANT_TAIL" ;;
+    work-check) echo "$SAME reviewing carefully: focused narrowed eyes, holding a small clipboard with a checklist of tick marks (no letters) in both arms. $VARIANT_TAIL" ;;
+    work-close) echo "$SAME wrapping up: calm satisfied smile, tying a small ribbon bow around a tiny closed gift box held in both arms. $VARIANT_TAIL" ;;
     blink) echo "$SAME blinking: both eyes fully closed as thin curved lines, everything else (expression, pose, no hat) identical to the reference. $VARIANT_TAIL" ;;
     drowsy) echo "$SAME very sleepy and drowsy: heavy half-closed eyelids, tired droopy eyes, a small yawning mouth, arms relaxed, no hat. Keep every feature of the head (stem, antenna, ears) exactly as in the reference. $VARIANT_TAIL" ;;
     *) echo "unknown variant: $1" >&2; return 1 ;;
@@ -100,7 +104,7 @@ generate_variant() {
   submit "$agent-$variant" "$body_file" "$OUT/$agent-$variant.png"; rm -f "$img_file" "$body_file"
 }
 
-# Modes: (default) base + sleep | --sleep-only | --poses (work, alert, done) | --idle (blink, drowsy) | --variant <name> [agent]
+# Modes: (default) base + sleep | --sleep-only | --poses (work, alert, done) | --idle (blink, drowsy) | --variant <name> [agent] (also work-explore|think|check|close)
 mode=base
 case "${1:-}" in
   --sleep-only) mode=sleep; shift ;;

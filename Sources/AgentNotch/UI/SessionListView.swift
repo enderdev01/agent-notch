@@ -32,7 +32,8 @@ struct SessionListView: View {
     private func mood(for items: [AgentSession]) -> MascotMood {
         if items.contains(where: { $0.status == .waitingApproval }) { return .waiting }
         if items.contains(where: { $0.status == .failed }) { return .error }
-        if items.contains(where: { $0.status.isWorking }) { return .working }
+        let working = items.filter { $0.status.isWorking }
+        if !working.isEmpty { return .working(phase: working.compactMap(\.phase).first) }
         return .resting(items)
     }
 

@@ -65,7 +65,8 @@ struct NotchRootView: View {
         if store.approvals.contains(where: { $0.agent == agent }) { return .waiting }
         if store.sessions.values.contains(where: { $0.agent == agent && $0.status == .failed }) { return .error }
         if store.doneFlash == agent { return .done }
-        if store.sessions.values.contains(where: { $0.agent == agent && $0.status.isWorking }) { return .working }
+        let working = store.sessions.values.filter { $0.agent == agent && $0.status.isWorking }
+        if !working.isEmpty { return .working(phase: working.compactMap(\.phase).first) }
         return .resting(store.sessions.values.filter { $0.agent == agent })
     }
 

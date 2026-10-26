@@ -28,6 +28,8 @@ struct HookEvent: Sendable {
     var steps: [Step]? = nil
     /// The question Claude is asking the user, when the tool is `AskUserQuestion`.
     var question: AskedQuestion? = nil
+    /// ODD phase Gentle Shell reported through `gentle_odd_phase` (or "clear" to leave it).
+    var phase: String? = nil
     /// Terminal context sent by the bridge as headers (not part of the hook JSON).
     var terminal: TerminalRef? = nil
 }

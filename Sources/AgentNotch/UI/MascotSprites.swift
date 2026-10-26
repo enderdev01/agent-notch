@@ -6,9 +6,14 @@ import AppKit
 enum MascotSprites {
     private static var cache: [String: NSImage] = [:]
 
-    /// A variant (`<agent>-<variant>.png`: sleep, work, alert, done) falls back to the base sprite when missing.
+    /// A variant (`<agent>-<variant>.png`: sleep, work, alert, done, work-check...) falls back to its
+    /// parent (`work-check` -> `work`), then to the base sprite, when missing.
     static func image(for agent: AgentKind, variant: String? = nil) -> NSImage? {
-        if let variant, let image = load("\(agent.rawValue)-\(variant)") { return image }
+        var name = variant
+        while let current = name {
+            if let image = load("\(agent.rawValue)-\(current)") { return image }
+            name = current.contains("-") ? current.split(separator: "-").dropLast().joined(separator: "-") : nil
+        }
         return load(agent.rawValue)
     }
 
