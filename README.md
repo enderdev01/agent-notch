@@ -10,6 +10,10 @@
 </p>
 
 <p align="center">
+  <b>English</b> · <a href="README.es.md">Español</a> · <a href="README.de.md">Deutsch</a>
+</p>
+
+<p align="center">
   <a href="https://github.com/enderdev01/agent-notch/releases/latest"><b>Download</b></a> ·
   <a href="#what-you-get">What you get</a> ·
   <a href="#works-with">Works with</a> ·
