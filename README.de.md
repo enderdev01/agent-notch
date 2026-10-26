@@ -26,7 +26,7 @@ Agent Notch macht den Notch des MacBooks zu einem Live-Dashboard für Ihre KI-Co
 
 Alles läuft lokal, der Server lauscht nur auf `127.0.0.1`, und es werden keine Daten irgendwohin gesendet.
 
-> Die App erscheint je nach Systemsprache auf Englisch, Spanisch oder Deutsch. Die Screenshots in dieser README zeigen die englische Oberfläche (Allow, Deny, Copy reply, Your turn …); auf Deutsch heißen sie Erlauben, Verweigern, Antwort kopieren und Sie sind dran.
+> Die App erscheint je nach Systemsprache auf Englisch, Spanisch oder Deutsch, oder in der Sprache, die im Menüleistenelement gewählt wird (Sprache). Die Screenshots in dieser README zeigen die englische Oberfläche (Allow, Deny, Copy reply, Your turn …); auf Deutsch heißen sie Erlauben, Verweigern, Antwort kopieren und Sie sind dran.
 
 ## Funktionen
 
@@ -120,7 +120,7 @@ Die Agenten melden Lebenszyklus-Ereignisse an einen kleinen lokalen HTTP-Server.
 <details>
 <summary><b>Einstellungen und Menüleiste</b></summary>
 
-Agenten verbinden… (installiert oder aktualisiert die Hooks), Freigaben pausieren (alles fällt auf das Terminal zurück), Töne für Abschluss und Freigabe, Lautstärke, ob das Maskottchen im Leerlauf angezeigt wird und wie lange es bis zum Einschlafen dauert, wie lange der Zustand „Sie sind dran“ bleibt (Aus / 2 / 5 / 15 / 30 Minuten), Start bei der Anmeldung (funktioniert nur aus der gepackten `.app`) und Beenden. Änderungen gelten sofort.
+Agenten verbinden… (installiert oder aktualisiert die Hooks), Freigaben pausieren (alles fällt auf das Terminal zurück), Töne für Abschluss und Freigabe, Lautstärke, ob das Maskottchen im Leerlauf angezeigt wird und wie lange es bis zum Einschlafen dauert, wie lange der Zustand „Sie sind dran“ bleibt (Aus / 2 / 5 / 15 / 30 Minuten), Sprache (folgt dem System, sofern keine gewählt wird; ein Wechsel startet die App neu), Start bei der Anmeldung (funktioniert nur aus der gepackten `.app`) und Beenden. Änderungen gelten sofort.
 
 `AGENT_NOTCH_REDUCE_MOTION=1` erzwingt zu Testzwecken den Pfad „Bewegung reduzieren".
 

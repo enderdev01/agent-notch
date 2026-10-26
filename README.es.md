@@ -26,7 +26,7 @@ Agent Notch convierte el notch del MacBook en un panel en vivo para tus agentes 
 
 Funciona en local, solo escucha en `127.0.0.1` y no envía nada a ningún sitio.
 
-> La app se muestra en español, inglés o alemán según el idioma del sistema. Las capturas de este README muestran la interfaz en inglés (Allow, Deny, Copy reply, Your turn…); en español son Permitir, Denegar, Copiar respuesta y Tu turno.
+> La app se muestra en español, inglés o alemán según el idioma del sistema, o el que elijas en el ítem de la barra de menús (Idioma). Las capturas de este README muestran la interfaz en inglés (Allow, Deny, Copy reply, Your turn…); en español son Permitir, Denegar, Copiar respuesta y Tu turno.
 
 ## Qué incluye
 
@@ -120,7 +120,7 @@ Los agentes reportan eventos de su ciclo de vida a un pequeño servidor HTTP loc
 <details>
 <summary><b>Preferencias y barra de menús</b></summary>
 
-Conectar agentes… (instala o actualiza los hooks), pausar aprobaciones (todo recurre a la terminal), sonidos de fin y de aprobación, volumen, si se muestra la mascota en reposo y cuánto tarda en dormirse, cuánto dura el estado «Tu turno» (Desactivado / 2 / 5 / 15 / 30 minutos), abrir al iniciar sesión (solo funciona desde la `.app` empaquetada) y salir. Los cambios se aplican al instante.
+Conectar agentes… (instala o actualiza los hooks), pausar aprobaciones (todo recurre a la terminal), sonidos de fin y de aprobación, volumen, si se muestra la mascota en reposo y cuánto tarda en dormirse, cuánto dura el estado «Tu turno» (Desactivado / 2 / 5 / 15 / 30 minutos), idioma (sigue al sistema salvo que elijas uno; cambiarlo reinicia la app), abrir al iniciar sesión (solo funciona desde la `.app` empaquetada) y salir. Los cambios se aplican al instante.
 
 `AGENT_NOTCH_REDUCE_MOTION=1` fuerza la ruta de Reducir movimiento para pruebas.
 

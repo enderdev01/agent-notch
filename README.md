@@ -82,7 +82,7 @@ Isolated Pi homes (`~/.gentle-shell/agent`, `~/.gentle-dot/agent`) get their own
 
 ## Install
 
-**Requirements:** macOS 14+. The app is available in English, Spanish and German and follows your system language. The hook installer needs `jq`: macOS 15 and later include it, on macOS 14 run `brew install jq` once. Built for notched MacBooks; on screens without a notch it draws a 200 pt pill at the top center instead.
+**Requirements:** macOS 14+. The app is available in English, Spanish and German and follows your system language unless you pick one in the menu bar item (Language). The hook installer needs `jq`: macOS 15 and later include it, on macOS 14 run `brew install jq` once. Built for notched MacBooks; on screens without a notch it draws a 200 pt pill at the top center instead.
 
 1. **[Download the DMG](https://github.com/enderdev01/agent-notch/releases/latest)** and drag *Agent Notch* to Applications.
 2. Open it. The build is **not notarized yet**, so macOS blocks the first launch: try to open it, then go to **System Settings → Privacy & Security**, scroll down to *Security*, click **Open Anyway** and confirm.
@@ -118,7 +118,7 @@ Agents report lifecycle events to a tiny local HTTP server. Approvals hold the c
 <details>
 <summary><b>Preferences and menu bar</b></summary>
 
-Connect agents… (installs or refreshes the hooks), pause approvals (everything falls back to the terminal), finish and approval sounds, sound volume, whether the idle mascot shows and how long until it falls asleep, how long the "Your turn" state lasts (Off / 2 / 5 / 15 / 30 minutes), launch at login (only works from the bundled `.app`), and quit. Changes apply immediately.
+Connect agents… (installs or refreshes the hooks), pause approvals (everything falls back to the terminal), finish and approval sounds, sound volume, whether the idle mascot shows and how long until it falls asleep, how long the "Your turn" state lasts (Off / 2 / 5 / 15 / 30 minutes), language (follows the system unless you pick one; changing it restarts the app), launch at login (only works from the bundled `.app`), and quit. Changes apply immediately.
 
 `AGENT_NOTCH_REDUCE_MOTION=1` forces the Reduce Motion path for testing.
 
