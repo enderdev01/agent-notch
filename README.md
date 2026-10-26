@@ -174,7 +174,7 @@ scripts/release.sh                # signs with the hardened runtime, notarizes a
 
 To publish on GitHub, create a release with the DMG attached and `docs/release-<version>.md` as its notes (`gh release create v<version> build/AgentNotch-<version>.dmg --title "Agent Notch <version>" --notes-file docs/release-<version>.md`).
 
-Notarization needs a paid Apple Developer Program account, a *Developer ID Application* certificate in your keychain, and a profile stored once with `xcrun notarytool store-credentials agent-notch --apple-id <id> --team-id <TEAMID> --password <app-specific-password>`. Bump `CFBundleShortVersionString` in `packaging/Info.plist` for each release.
+Notarization needs a paid Apple Developer Program account, a *Developer ID Application* certificate in your keychain, and a profile stored once with `xcrun notarytool store-credentials agent-notch --apple-id <id> --team-id <TEAMID>` (it asks for the app-specific password with a hidden prompt; the full setup is in [docs/notarization.md](docs/notarization.md)). Bump `CFBundleShortVersionString` in `packaging/Info.plist` for each release.
 
 </details>
 
