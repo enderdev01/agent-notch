@@ -1,0 +1,22 @@
+name: Bug report
+description: Something does not work as expected
+labels: [bug]
+body:
+  - type: input
+    id: version
+    attributes: {label: Agent Notch version, placeholder: 0.3.1}
+    validations: {required: true}
+  - type: input
+    id: macos
+    attributes: {label: macOS version and Mac model, placeholder: "macOS 15.2, MacBook Pro 14"}
+    validations: {required: true}
+  - type: dropdown
+    id: agent
+    attributes:
+      label: Agent
+      options: [Claude Code, Codex, Gentle Shell, Other]
+    validations: {required: true}
+  - type: textarea
+    id: what
+    attributes: {label: What happened, description: "Steps to reproduce, what you expected, what you saw."}
+    validations: {required: true}
