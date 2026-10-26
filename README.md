@@ -85,7 +85,7 @@ Isolated Pi homes (`~/.gentle-shell/agent`, `~/.gentle-dot/agent`) get their own
 **Requirements:** macOS 14+. The hook installer needs `jq`: macOS 15 and later include it, on macOS 14 run `brew install jq` once. Built for notched MacBooks; on screens without a notch it draws a 200 pt pill at the top center instead.
 
 1. **[Download the DMG](https://github.com/enderdev01/agent-notch/releases/latest)** and drag *Agent Notch* to Applications.
-2. Open it. The build is **not notarized yet**, so macOS blocks the first launch: right-click the app, choose **Open**, and confirm.
+2. Open it. The build is **not notarized yet**, so macOS blocks the first launch: try to open it, then go to **System Settings → Privacy & Security**, scroll down to *Security*, click **Open Anyway** and confirm.
 3. Click **Connect** when the first launch offers it, or later choose **Connect agents…** from the menu bar item. It adds the hooks to Claude Code, Codex and Pi and shows exactly what changed.
 
    Prefer the terminal? The same installer ships inside the app, and `--dry-run` previews the exact config changes:

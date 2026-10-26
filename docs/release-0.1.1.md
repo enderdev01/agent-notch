@@ -16,7 +16,7 @@ Replace the app, open it, and choose **Connect agents…** once. It refreshes th
 ### Install
 
 1. Download `AgentNotch-0.1.1.dmg`, drag **Agent Notch** to Applications.
-2. This build is **not notarized**: the first time, right-click the app, choose **Open**, and confirm.
+2. This build is **not notarized**: the first time, try to open it, then go to **System Settings → Privacy & Security**, scroll down to *Security*, click **Open Anyway** and confirm.
 3. Click **Connect** when the app offers it (or choose **Connect agents…** from the menu bar item).
 4. Restart any running Claude Code / Codex / Pi session. Codex may ask you to trust the new hooks.
 
