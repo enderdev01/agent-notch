@@ -22,11 +22,11 @@
   <a href="#details">Details</a>
 </p>
 
-Agent Notch macht den Notch des MacBooks zu einem Live-Dashboard für Ihre KI-Coding-Agenten. Sie sehen, was jeder Agent gerade tut, verfolgen seine Aufgabenliste Schritt für Schritt und **erlauben oder verweigern** (*Allow / Deny*) Berechtigungsanfragen, ohne Ihre aktuelle Arbeit zu verlassen. Wenn ein Agent fertig ist, sehen Sie seine Antwort; wenn er Sie braucht, sagt der Notch es Ihnen.
+Agent Notch macht den Notch des MacBooks zu einem Live-Dashboard für Ihre KI-Coding-Agenten. Sie sehen, was jeder Agent gerade tut, verfolgen seine Aufgabenliste Schritt für Schritt und **erlauben oder verweigern** Berechtigungsanfragen, ohne Ihre aktuelle Arbeit zu verlassen. Wenn ein Agent fertig ist, sehen Sie seine Antwort; wenn er Sie braucht, sagt der Notch es Ihnen.
 
 Alles läuft lokal, der Server lauscht nur auf `127.0.0.1`, und es werden keine Daten irgendwohin gesendet.
 
-> Die Oberfläche der App ist auf Englisch (Allow, Deny, Copy reply, Your turn …), ebenso die Screenshots. Diese Übersetzung deckt die Dokumentation ab.
+> Die App erscheint je nach Systemsprache auf Englisch, Spanisch oder Deutsch. Die Screenshots in dieser README zeigen die englische Oberfläche (Allow, Deny, Copy reply, Your turn …); auf Deutsch heißen sie Erlauben, Verweigern, Antwort kopieren und Sie sind dran.
 
 ## Funktionen
 
@@ -40,7 +40,7 @@ Führt ein Agent eine Aufgabenliste, zeigt jeder Schritt einen Ladeindikator, so
 
 ### Mit dem Mauszeiger alles sehen
 
-Mit dem Mauszeiger über den Notch fahren, um ihn aufzuklappen: Sitzungen nach Agent gruppiert, die Tagesübersicht pro Agent (abgeschlossene und fehlgeschlagene Durchläufe, gearbeitete Zeit) und für die Zeile unter dem Mauszeiger der vollständige Prompt samt Antwort in einer Karte, die die Liste nie verschiebt. **Copy reply** kopiert die gesamte Antwort. Ein Klick auf eine Zeile springt zum Terminal, in dem der Agent läuft.
+Mit dem Mauszeiger über den Notch fahren, um ihn aufzuklappen: Sitzungen nach Agent gruppiert, die Tagesübersicht pro Agent (abgeschlossene und fehlgeschlagene Durchläufe, gearbeitete Zeit) und für die Zeile unter dem Mauszeiger der vollständige Prompt samt Antwort in einer Karte, die die Liste nie verschiebt. **Antwort kopieren** kopiert die gesamte Antwort. Ein Klick auf eine Zeile springt zum Terminal, in dem der Agent läuft.
 
 <p align="center">
   <img src="docs/images/detail.png" alt="Der aufgeklappte Notch mit Sitzungsliste und der Detailkarte der Zeile unter dem Mauszeiger" width="440">
@@ -48,7 +48,7 @@ Mit dem Mauszeiger über den Notch fahren, um ihn aufzuklappen: Sitzungen nach A
 
 ### Direkt im Notch freigeben
 
-Berechtigungsanfragen erscheinen direkt im Notch. **Allow** oder **Deny** per Maus oder Tastatur, oder die Entscheidung an das Terminal zurückgeben. Nichts wird ohne Ihr Zutun entschieden: Passiert nichts, übernimmt nach einem Timeout die eigene Abfrage des Agenten.
+Berechtigungsanfragen erscheinen direkt im Notch. **Erlauben** oder **Verweigern** per Maus oder Tastatur, oder die Entscheidung an das Terminal zurückgeben. Nichts wird ohne Ihr Zutun entschieden: Passiert nichts, übernimmt nach einem Timeout die eigene Abfrage des Agenten.
 
 <p align="center">
   <img src="docs/images/approval.png" alt="Eine Freigabekarte für einen Bash-Befehl mit den Schaltflächen Deny und Allow" width="440">
@@ -56,7 +56,7 @@ Berechtigungsanfragen erscheinen direkt im Notch. **Allow** oder **Deny** per Ma
 
 ### Wissen, wann Sie dran sind
 
-Einige Sekunden nach dem Ende eines Durchlaufs erscheint unter dem Notch eine lesbare Zeile der letzten Agentenantwort. Stellt diese Antwort eine Frage an Sie, wird sie bernsteinfarben, die Zeile zeigt **Your turn** und das Maskottchen erhält einen bernsteinfarbenen Punkt. Fehler erscheinen rot und in verständlicher Sprache, zum Beispiel „Rate limit reached".
+Einige Sekunden nach dem Ende eines Durchlaufs erscheint unter dem Notch eine lesbare Zeile der letzten Agentenantwort. Stellt diese Antwort eine Frage an Sie, wird sie bernsteinfarben, die Zeile zeigt **Sie sind dran** und das Maskottchen erhält einen bernsteinfarbenen Punkt. Fehler erscheinen rot und in verständlicher Sprache, zum Beispiel „Rate limit reached".
 
 <p align="center">
   <img src="docs/images/peek.png" alt="Der Notch zeigt die Frage des Agenten in Bernstein" width="400">
@@ -67,16 +67,16 @@ Einige Sekunden nach dem Ende eines Durchlaufs erscheint unter dem Notch eine le
 Jeder Agent hat ein Pixel-Art-Maskottchen, das auf sein Verhalten reagiert: arbeitet, wartet auf Sie, fertig, fehlgeschlagen sowie schläfrig oder schlafend im Leerlauf.
 
 <p align="center">
-  <img src="docs/images/mascots.png" alt="Maskottchen von Claude Code, Codex und gentle-shell in sechs Zuständen" width="700">
+  <img src="docs/images/mascots.png" alt="Maskottchen von Claude Code, Codex und Gentle Shell in sechs Zuständen" width="700">
 </p>
 
 ## Kompatibel mit
 
-| | Claude Code | Codex CLI | Pi / gentle-shell |
+| | Claude Code | Codex CLI | Pi / Gentle Shell |
 |---|:---:|:---:|:---:|
 | Live-Status, Timer und Antwortvorschau | ✅ | ✅ | ✅ |
 | Aufgabenliste als Schritte | ✅ `TodoWrite` | ✅ `update_plan` (in echten Läufen nicht getestet) | k. A. |
-| Allow / Deny aus dem Notch | ✅ | ✅ | ✅ nur riskante `bash`-Befehle |
+| Erlauben / Verweigern aus dem Notch | ✅ | ✅ | ✅ nur riskante `bash`-Befehle |
 | Fehlerzustand | ✅ | k. A. | ✅ |
 | Klick fokussiert das Terminal | ✅ exakter Tab in Terminal.app und iTerm2 | ✅ ebenso | ✅ App kommt in den Vordergrund |
 
@@ -88,7 +88,7 @@ Isolierte Pi-Homes (`~/.gentle-shell/agent`, `~/.gentle-dot/agent`) erhalten ein
 
 1. **[Das DMG herunterladen](https://github.com/enderdev01/agent-notch/releases/latest)** und *Agent Notch* in den Programme-Ordner ziehen.
 2. Die App öffnen. Der Build ist **noch nicht notarisiert**, daher blockiert macOS den ersten Start: die App einmal zu öffnen versuchen, dann **Systemeinstellungen → Datenschutz & Sicherheit** öffnen, nach unten zu *Sicherheit* scrollen, **Trotzdem öffnen** (*Open Anyway*) klicken und bestätigen.
-3. **Connect** klicken, wenn der erste Start es anbietet, oder später im Menüleistenelement **Connect agents…** wählen. Das trägt die Hooks in Claude Code, Codex und Pi ein und zeigt genau, was sich geändert hat.
+3. **Verbinden** klicken, wenn der erste Start es anbietet, oder später im Menüleistenelement **Agenten verbinden…** wählen. Das trägt die Hooks in Claude Code, Codex und Pi ein und zeigt genau, was sich geändert hat.
 
    Lieber im Terminal? Derselbe Installer ist in der App enthalten, und `--dry-run` zeigt eine Vorschau der genauen Konfigurationsänderungen:
 
@@ -107,7 +107,7 @@ Isolierte Pi-Homes (`~/.gentle-shell/agent`, `~/.gentle-dot/agent`) erhalten ein
 flowchart LR
     C["Claude Code"] -- Hooks --> B["agent-notch-hook<br/>bash + curl"]
     X["Codex CLI"] -- Hooks --> B
-    P["Pi / gentle-shell"] -- Erweiterung --> S
+    P["Pi / Gentle Shell"] -- Erweiterung --> S
     B -- "POST /event, /approve" --> S["Agent Notch<br/>127.0.0.1:47823"]
     S --> N(["Der Notch"])
     N -- "Allow / Deny" --> S
@@ -120,7 +120,7 @@ Die Agenten melden Lebenszyklus-Ereignisse an einen kleinen lokalen HTTP-Server.
 <details>
 <summary><b>Einstellungen und Menüleiste</b></summary>
 
-Connect agents… (installiert oder aktualisiert die Hooks), Freigaben pausieren (alles fällt auf das Terminal zurück), Töne für Abschluss und Freigabe, Lautstärke, ob das Maskottchen im Leerlauf angezeigt wird und wie lange es bis zum Einschlafen dauert, wie lange der Zustand „Your turn" bleibt (Off / 2 / 5 / 15 / 30 Minuten), Start bei der Anmeldung (funktioniert nur aus der gepackten `.app`) und Beenden. Änderungen gelten sofort.
+Agenten verbinden… (installiert oder aktualisiert die Hooks), Freigaben pausieren (alles fällt auf das Terminal zurück), Töne für Abschluss und Freigabe, Lautstärke, ob das Maskottchen im Leerlauf angezeigt wird und wie lange es bis zum Einschlafen dauert, wie lange der Zustand „Sie sind dran“ bleibt (Aus / 2 / 5 / 15 / 30 Minuten), Start bei der Anmeldung (funktioniert nur aus der gepackten `.app`) und Beenden. Änderungen gelten sofort.
 
 `AGENT_NOTCH_REDUCE_MOTION=1` erzwingt zu Testzwecken den Pfad „Bewegung reduzieren".
 
@@ -131,9 +131,9 @@ Connect agents… (installiert oder aktualisiert die Hooks), Freigaben pausieren
 
 - **Claude Code**: Hooks in `~/.claude/settings.json` (SessionStart, UserPromptSubmit, PreToolUse, PostToolUse, Notification, Stop, StopFailure -> `event`; PermissionRequest -> `approve`).
 - **Codex CLI**: Hooks in `~/.codex/hooks.json` (dieselben ohne Notification und StopFailure, zusätzlich Interrupt).
-- **Pi (gentle-shell, Gentle Dot)**: `~/.pi/agent/extensions/agent-notch.ts` meldet Lebenszyklus-Ereignisse und sperrt riskante `bash`-Befehle (rm -rf, sudo, Force-Push, chmod/chown 777, curl|sh, dd, mkfs; die Liste steht am Anfang der Datei).
+- **Pi (Gentle Shell, Gentle Dot)**: `~/.pi/agent/extensions/agent-notch.ts` meldet Lebenszyklus-Ereignisse und sperrt riskante `bash`-Befehle (rm -rf, sudo, Force-Push, chmod/chown 777, curl|sh, dd, mkfs; die Liste steht am Anfang der Datei).
 
-Entscheidungen werden im nativen Format des Agenten zurückgegeben. Allow/Deny beantworten die Abfrage; „Answer in terminal" (oder ein Timeout nach 110 s) gibt die Kontrolle an die Abfrage des Agenten zurück.
+Entscheidungen werden im nativen Format des Agenten zurückgegeben. Erlauben/Verweigern beantworten die Abfrage; „Im Terminal antworten“ (oder ein Timeout nach 110 s) gibt die Kontrolle an die Abfrage des Agenten zurück.
 
 </details>
 
@@ -141,7 +141,7 @@ Entscheidungen werden im nativen Format des Agenten zurückgegeben. Allow/Deny b
 <summary><b>Fehlerbehebung</b></summary>
 
 - **App läuft nicht / Port belegt**: `curl http://127.0.0.1:47823/health` prüfen (muss `ok` ausgeben). Der Port lässt sich mit `AGENT_NOTCH_PORT` ändern (App und Agenten müssen übereinstimmen).
-- **Es erscheint nichts**: Agentensitzung nach der Installation neu starten; prüfen, ob `~/.local/bin/agent-notch-hook` existiert (**Connect agents…** installiert es). `jq` wird nur zum Verbinden der Agenten benötigt, nicht während sie laufen.
+- **Es erscheint nichts**: Agentensitzung nach der Installation neu starten; prüfen, ob `~/.local/bin/agent-notch-hook` existiert (**Agenten verbinden…** installiert es). `jq` wird nur zum Verbinden der Agenten benötigt, nicht während sie laufen.
 - **Tastaturkürzel**: Return / Cmd-Delete funktionieren, sobald das Panel den Fokus hat (nach einem Klick darauf). Das Panel stiehlt von sich aus nie den Fokus, deshalb werden keine globalen Kürzel registriert.
 - **Debug**: Mit `AGENT_NOTCH_DEBUG=1` starten, um `GET /debug/state` und `POST /debug/resolve-all/{allow|deny}` zu aktivieren.
 

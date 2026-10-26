@@ -1,4 +1,4 @@
-// Agent Notch extension for Pi (gentle-shell).
+// Agent Notch extension for Pi (Gentle Shell).
 // Reports lifecycle events to the Agent Notch app and gates risky bash commands on it.
 import type { ExtensionAPI } from "@earendil-works/pi-coding-agent";
 

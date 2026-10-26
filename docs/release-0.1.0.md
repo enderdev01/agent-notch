@@ -1,6 +1,6 @@
 ## Agent Notch 0.1.0
 
-Live activity of your AI coding agents (Claude Code, Codex CLI, Pi / gentle-shell) in the MacBook notch.
+Live activity of your AI coding agents (Claude Code, Codex CLI, Pi / Gentle Shell) in the MacBook notch.
 
 - Collapsed notch: mascot per agent, accent line while it works, turn timer, and a one-line peek of the last reply.
 - Step by step: when an agent keeps a task list, each step shows a spinner while it runs and a check when done.

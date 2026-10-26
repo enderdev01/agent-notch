@@ -11,7 +11,7 @@ done
 
 HOOK_BIN="$HOME/.local/bin/agent-notch-hook"
 PI_EXT="$HOME/.pi/agent/extensions/agent-notch.ts"
-# gentle-shell and Gentle Dot run Pi with their own isolated homes, so each needs its own copy of the extension.
+# Gentle Shell and Gentle Dot run Pi with their own isolated homes, so each needs its own copy of the extension.
 GENTLE_SHELL_HOME="$HOME/.gentle-shell/agent"
 GENTLE_SHELL_EXT="$GENTLE_SHELL_HOME/extensions/agent-notch.ts"
 GENTLE_DOT_HOME="$HOME/.gentle-dot/agent"

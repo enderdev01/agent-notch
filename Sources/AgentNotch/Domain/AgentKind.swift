@@ -10,7 +10,7 @@ enum AgentKind: String, CaseIterable, Sendable, Codable {
         switch self {
         case .claude: return "Claude Code"
         case .codex: return "Codex"
-        case .gentle: return "gentle-shell"
+        case .gentle: return "Gentle Shell"
         }
     }
 

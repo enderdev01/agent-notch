@@ -65,12 +65,12 @@ For a few seconds after a turn ends, one readable line of the agent's last reply
 Each agent has a pixel-art mascot that reacts to what it is doing: working, waiting for you, done, failed, and drowsy or asleep when idle.
 
 <p align="center">
-  <img src="docs/images/mascots.png" alt="Mascots for Claude Code, Codex and gentle-shell in six states" width="700">
+  <img src="docs/images/mascots.png" alt="Mascots for Claude Code, Codex and Gentle Shell in six states" width="700">
 </p>
 
 ## Works with
 
-| | Claude Code | Codex CLI | Pi / gentle-shell |
+| | Claude Code | Codex CLI | Pi / Gentle Shell |
 |---|:---:|:---:|:---:|
 | Live status, timer and reply peek | ✅ | ✅ | ✅ |
 | Task list as steps | ✅ `TodoWrite` | ✅ `update_plan` (untested on real runs) | n/a |
@@ -82,7 +82,7 @@ Isolated Pi homes (`~/.gentle-shell/agent`, `~/.gentle-dot/agent`) get their own
 
 ## Install
 
-**Requirements:** macOS 14+. The hook installer needs `jq`: macOS 15 and later include it, on macOS 14 run `brew install jq` once. Built for notched MacBooks; on screens without a notch it draws a 200 pt pill at the top center instead.
+**Requirements:** macOS 14+. The app is available in English, Spanish and German and follows your system language. The hook installer needs `jq`: macOS 15 and later include it, on macOS 14 run `brew install jq` once. Built for notched MacBooks; on screens without a notch it draws a 200 pt pill at the top center instead.
 
 1. **[Download the DMG](https://github.com/enderdev01/agent-notch/releases/latest)** and drag *Agent Notch* to Applications.
 2. Open it. The build is **not notarized yet**, so macOS blocks the first launch: try to open it, then go to **System Settings → Privacy & Security**, scroll down to *Security*, click **Open Anyway** and confirm.
@@ -105,7 +105,7 @@ Isolated Pi homes (`~/.gentle-shell/agent`, `~/.gentle-dot/agent`) get their own
 flowchart LR
     C["Claude Code"] -- hooks --> B["agent-notch-hook<br/>bash + curl"]
     X["Codex CLI"] -- hooks --> B
-    P["Pi / gentle-shell"] -- extension --> S
+    P["Pi / Gentle Shell"] -- extension --> S
     B -- "POST /event, /approve" --> S["Agent Notch<br/>127.0.0.1:47823"]
     S --> N(["The notch"])
     N -- "Allow / Deny" --> S
@@ -129,7 +129,7 @@ Connect agents… (installs or refreshes the hooks), pause approvals (everything
 
 - **Claude Code**: hooks in `~/.claude/settings.json` (SessionStart, UserPromptSubmit, PreToolUse, PostToolUse, Notification, Stop, StopFailure -> `event`; PermissionRequest -> `approve`).
 - **Codex CLI**: hooks in `~/.codex/hooks.json` (same minus Notification and StopFailure, plus Interrupt).
-- **Pi (gentle-shell, Gentle Dot)**: `~/.pi/agent/extensions/agent-notch.ts` reports lifecycle events and gates risky `bash` commands (rm -rf, sudo, force push, chmod/chown 777, curl|sh, dd, mkfs; edit the list at the top of the file).
+- **Pi (Gentle Shell, Gentle Dot)**: `~/.pi/agent/extensions/agent-notch.ts` reports lifecycle events and gates risky `bash` commands (rm -rf, sudo, force push, chmod/chown 777, curl|sh, dd, mkfs; edit the list at the top of the file).
 
 Decisions are returned in the agent's native format. Allow/Deny answer the prompt; "Answer in terminal" (or a timeout after 110 s) hands control back to the agent's own prompt.
 

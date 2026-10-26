@@ -56,7 +56,7 @@ codex_specs="$(jq -c -n \
   --argjson c "$(spec codex event 2 Interrupt)" '$a + $b + $c')"  # Interrupt timeout is capped at 3 s
 merge_into "$CODEX_HOOKS" '{"hooks":{}}' "$codex_specs"
 
-# 4. Pi (gentle-shell)
+# 4. Pi (Gentle Shell)
 if [ "$DRY_RUN" = 1 ]; then
   echo "would copy $ROOT/integrations/pi/agent-notch.ts -> $PI_EXT"
 else
@@ -65,7 +65,7 @@ else
   echo "installed: $PI_EXT"
 fi
 
-# 5. Isolated Pi homes (gentle-shell, Gentle Dot), only for the apps that have been set up
+# 5. Isolated Pi homes (Gentle Shell, Gentle Dot), only for the apps that have been set up
 for home in "$GENTLE_SHELL_HOME" "$GENTLE_DOT_HOME"; do
   [ -d "$home" ] || continue
   ext="$home/extensions/agent-notch.ts"
