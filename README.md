@@ -64,6 +64,8 @@ For a few seconds after a turn ends, one readable line of the agent's last reply
 
 Each agent has a pixel-art mascot that reacts to what it is doing: working, waiting for you, done, failed, and drowsy or asleep when idle.
 
+Gentle Shell's mascot also shows the ODD phase the agent reports with its `gentle_odd_phase` tool while it works: a magnifying glass when exploring or researching, a lightbulb when authorizing, deciding or planning, a clipboard when checking, and a gift box when closing. Implementing keeps the plain working pose. Phases Gentle Shell only infers from tool activity are not sent to Agent Notch, so they do not change the mascot.
+
 <p align="center">
   <img src="docs/images/mascots.png" alt="Mascots for Claude Code, Codex and Gentle Shell in six states" width="700">
 </p>
