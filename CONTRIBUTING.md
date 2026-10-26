@@ -12,9 +12,16 @@ make app        # build/Agent Notch.app
 make run        # run the binary
 ```
 
+## How changes get in
+
+`main` is protected: nobody pushes to it directly. Every change goes through a pull request that the maintainer approves.
+
+1. Open an issue describing the bug or idea and wait for a go-ahead.
+2. Fork the repo and create a branch (`fix/short-name`, `feat/short-name`).
+3. Open a pull request that links the issue (`Closes #123`). CI must pass.
+
 ## Before you open a PR
 
-- Open an issue first for anything bigger than a small fix, so we agree on the approach.
 - UI strings go through `L("English text")`. Add the Spanish and German translations in `packaging/locales/<lang>.lproj/`
   and run `python3 scripts/check-strings.py` (CI runs it too).
 - Keep the layers as they are: `Domain` knows nothing about UI or networking, `Infrastructure` talks to the system.
