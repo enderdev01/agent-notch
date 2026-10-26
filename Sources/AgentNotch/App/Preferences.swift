@@ -34,6 +34,12 @@ enum Preferences {
         set { save(newValue, "showIdleMascot") }
     }
 
+    /// True once the first-launch "Connect your agents?" offer was shown (it is offered only once).
+    static var connectPromptShown: Bool {
+        get { bool("connectPromptShown", false) }
+        set { save(newValue, "connectPromptShown") }
+    }
+
     private static func bool(_ key: String, _ fallback: Bool) -> Bool {
         UserDefaults.standard.object(forKey: key) as? Bool ?? fallback
     }

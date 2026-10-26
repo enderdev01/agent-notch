@@ -28,6 +28,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         statusMenu = StatusMenu(store: store)
         panelController = NotchPanelController(store: store, viewModel: viewModel)
         panelController?.show()
+        // After launch finishes, so the notch is already on screen behind the dialog.
+        DispatchQueue.main.async { ConnectAgents.promptIfNeeded() }
     }
 
     func applicationWillTerminate(_ notification: Notification) {

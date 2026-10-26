@@ -84,15 +84,17 @@ Los homes aislados de Pi (`~/.gentle-shell/agent`, `~/.gentle-dot/agent`) recibe
 
 ## Instalación
 
-**Requisitos:** macOS 14+ y `jq` para el instalador de hooks (`brew install jq`). Pensada para MacBooks con notch; en pantallas sin notch dibuja una píldora de 200 pt en la parte superior central.
+**Requisitos:** macOS 14+. El instalador de hooks necesita `jq`: macOS 15 y posteriores ya lo incluyen; en macOS 14 ejecuta `brew install jq` una vez. Pensada para MacBooks con notch; en pantallas sin notch dibuja una píldora de 200 pt en la parte superior central.
 
 1. **[Descarga el DMG](https://github.com/enderdev01/agent-notch/releases/latest)** y arrastra *Agent Notch* a Aplicaciones.
 2. Ábrela. La compilación **aún no está notarizada**, así que macOS bloquea el primer inicio: haz clic derecho en la app, elige **Abrir** y confirma.
-3. Conecta tus agentes (el instalador viene dentro de la app):
+3. Pulsa **Connect** cuando el primer arranque lo ofrezca, o elige después **Connect agents…** en el ítem de la barra de menús. Añade los hooks a Claude Code, Codex y Pi y muestra exactamente qué cambió.
+
+   ¿Prefieres la terminal? El mismo instalador viene dentro de la app, y `--dry-run` muestra una vista previa de los cambios de configuración:
 
    ```sh
-   "/Applications/Agent Notch.app/Contents/Resources/scripts/install.sh" --dry-run   # vista previa de los cambios de configuración
-   "/Applications/Agent Notch.app/Contents/Resources/scripts/install.sh"             # copia el bridge, fusiona los hooks y copia la extensión de Pi
+   "/Applications/Agent Notch.app/Contents/Resources/scripts/install.sh" --dry-run
+   "/Applications/Agent Notch.app/Contents/Resources/scripts/install.sh"
    ```
 
 4. Reinicia cualquier sesión de Claude Code / Codex / Pi que esté abierta para que cargue los hooks. Codex puede pedirte que confíes en los hooks nuevos.
@@ -103,7 +105,7 @@ Los homes aislados de Pi (`~/.gentle-shell/agent`, `~/.gentle-dot/agent`) recibe
 
 ```mermaid
 flowchart LR
-    C["Claude Code"] -- hooks --> B["agent-notch-hook<br/>bash + curl + jq"]
+    C["Claude Code"] -- hooks --> B["agent-notch-hook<br/>bash + curl"]
     X["Codex CLI"] -- hooks --> B
     P["Pi / gentle-shell"] -- extensión --> S
     B -- "POST /event, /approve" --> S["Agent Notch<br/>127.0.0.1:47823"]
@@ -118,7 +120,7 @@ Los agentes reportan eventos de su ciclo de vida a un pequeño servidor HTTP loc
 <details>
 <summary><b>Preferencias y barra de menús</b></summary>
 
-Pausar aprobaciones (todo recurre a la terminal), sonidos de fin y de aprobación, volumen, si se muestra la mascota en reposo y cuánto tarda en dormirse, cuánto dura el estado "Your turn" (Off / 2 / 5 / 15 / 30 minutos), abrir al iniciar sesión (solo funciona desde la `.app` empaquetada) y salir. Los cambios se aplican al instante.
+Connect agents… (instala o actualiza los hooks), pausar aprobaciones (todo recurre a la terminal), sonidos de fin y de aprobación, volumen, si se muestra la mascota en reposo y cuánto tarda en dormirse, cuánto dura el estado "Your turn" (Off / 2 / 5 / 15 / 30 minutos), abrir al iniciar sesión (solo funciona desde la `.app` empaquetada) y salir. Los cambios se aplican al instante.
 
 `AGENT_NOTCH_REDUCE_MOTION=1` fuerza la ruta de Reducir movimiento para pruebas.
 
@@ -139,7 +141,7 @@ Las decisiones se devuelven en el formato nativo del agente. Allow/Deny responde
 <summary><b>Solución de problemas</b></summary>
 
 - **La app no está en ejecución / puerto ocupado**: comprueba `curl http://127.0.0.1:47823/health` (debe imprimir `ok`). Cambia el puerto con `AGENT_NOTCH_PORT` (la app y los agentes deben coincidir).
-- **No aparece nada**: reinicia la sesión del agente después de instalar; confirma que existe `~/.local/bin/agent-notch-hook` y que `jq` está instalado.
+- **No aparece nada**: reinicia la sesión del agente después de instalar; confirma que existe `~/.local/bin/agent-notch-hook` (elige **Connect agents…** para instalarlo). `jq` solo hace falta para conectar los agentes, no mientras funcionan.
 - **Atajos de teclado**: Return / Cmd-Delete funcionan cuando el panel tiene el foco (tras hacer clic en él). El panel nunca roba el foco por su cuenta, por eso no se registran atajos globales.
 - **Depuración**: inicia con `AGENT_NOTCH_DEBUG=1` para habilitar `GET /debug/state` y `POST /debug/resolve-all/{allow|deny}`.
 
@@ -172,7 +174,7 @@ NOTARY_PROFILE=agent-notch \
 scripts/release.sh                # firma con hardened runtime, notariza y grapa el DMG
 ```
 
-Para publicar en GitHub, crea un release con el DMG adjunto y `docs/release-0.1.0.md` como notas (`gh release create v0.1.0 build/AgentNotch-0.1.0.dmg --title "Agent Notch 0.1.0" --notes-file docs/release-0.1.0.md`).
+Para publicar en GitHub, crea un release con el DMG adjunto y `docs/release-<version>.md` como notas (`gh release create v<version> build/AgentNotch-<version>.dmg --title "Agent Notch <version>" --notes-file docs/release-<version>.md`).
 
 La notarización requiere una cuenta de pago del Apple Developer Program, un certificado *Developer ID Application* en tu llavero y un perfil guardado una vez con `xcrun notarytool store-credentials agent-notch --apple-id <id> --team-id <TEAMID> --password <contraseña-específica-de-app>`. Sube `CFBundleShortVersionString` en `packaging/Info.plist` en cada versión.
 

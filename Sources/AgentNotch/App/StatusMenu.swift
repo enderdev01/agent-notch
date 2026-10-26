@@ -37,7 +37,9 @@ final class StatusMenu: NSObject {
         yourTurnItem.submenu = choiceMenu(Self.yourTurnChoices, action: #selector(pickYourTurn(_:)))
         let quit = NSMenuItem(title: "Quit Agent Notch", action: #selector(quit), keyEquivalent: "q")
         quit.target = self
-        [pauseItem, .separator(), soundItem, approvalSoundItem, volumeItem, .separator(), idleItem, sleepItem,
+        let connect = NSMenuItem(title: "Connect agents…", action: #selector(connectAgents), keyEquivalent: "")
+        connect.target = self
+        [connect, .separator(), pauseItem, .separator(), soundItem, approvalSoundItem, volumeItem, .separator(), idleItem, sleepItem,
          yourTurnItem, .separator(), loginItem, .separator(), quit].forEach(menu.addItem)
         menu.delegate = self
         item.menu = menu
@@ -100,6 +102,8 @@ final class StatusMenu: NSObject {
             alert.runModal()
         }
     }
+
+    @objc private func connectAgents() { ConnectAgents.run() }
 
     @objc private func quit() { NSApp.terminate(nil) }
 }

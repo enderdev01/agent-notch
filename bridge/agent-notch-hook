@@ -38,10 +38,10 @@ case "$mode" in
     exit 0
     ;;
   approve)
-    command -v jq >/dev/null 2>&1 || exit 0
     response="$(printf '%s' "$payload" |
       curl -s -m 115 -X POST "${ctx[@]}" --data-binary @- "$base/approve/$agent" 2>/dev/null)" || exit 0
-    decision="$(printf '%s' "$response" | jq -r '.decision // empty' 2>/dev/null)" || exit 0
+    # The reply is our own {"decision":"allow|deny|terminal"}, so sed is enough and no jq is needed at hook time.
+    decision="$(printf '%s' "$response" | sed -n 's/.*"decision"[[:space:]]*:[[:space:]]*"\([a-z]*\)".*/\1/p')"
     case "$decision" in
       allow)
         printf '%s\n' '{"hookSpecificOutput":{"hookEventName":"PermissionRequest","decision":{"behavior":"allow"}}}'
