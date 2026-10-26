@@ -34,6 +34,19 @@ enum Preferences {
         set { save(newValue, "showIdleMascot") }
     }
 
+    /// Language picked in the menu bar item ("en", "es", "de"); nil follows the system. It lives where System Settings
+    /// keeps its per-app language (the app's own `AppleLanguages`), so both ways of choosing a language agree.
+    static var languageOverride: String? {
+        get {
+            let domain = UserDefaults.standard.persistentDomain(forName: Bundle.main.bundleIdentifier ?? "")
+            return (domain?["AppleLanguages"] as? [String])?.first
+        }
+        set {
+            if let code = newValue { UserDefaults.standard.set([code], forKey: "AppleLanguages") }
+            else { UserDefaults.standard.removeObject(forKey: "AppleLanguages") }
+        }
+    }
+
     /// True once the first-launch "Connect your agents?" offer was shown (it is offered only once).
     static var connectPromptShown: Bool {
         get { bool("connectPromptShown", false) }

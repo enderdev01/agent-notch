@@ -21,12 +21,14 @@
 "Mascot falls asleep after" = "Mascot falls asleep after";
 "\"Your turn\" mark lasts" = "\"Your turn\" mark lasts";
 "Launch at login" = "Launch at login";
+"Language" = "Language";
 "Quiet" = "Quiet";
 "Normal" = "Normal";
 "Loud" = "Loud";
 "30 seconds" = "30 seconds";
 "1 minute" = "1 minute";
 "3 minutes" = "3 minutes";
+"Match system language" = "Match system language";
 "Off" = "Off";
 "2 minutes" = "2 minutes";
 "5 minutes" = "5 minutes";
@@ -36,6 +38,10 @@
 "Connect agents…" = "Connect agents…";
 "Could not change launch at login" = "Could not change launch at login";
 "This only works when running the bundled app (make app)." = "This only works when running the bundled app (make app).";
+"Restart Agent Notch?" = "Restart Agent Notch?";
+"Agent Notch will restart to apply the language. Pending approvals go back to the terminal, and sessions reappear with their next activity." = "Agent Notch will restart to apply the language. Pending approvals go back to the terminal, and sessions reappear with their next activity.";
+"Restart" = "Restart";
+"Cancel" = "Cancel";
 "Launch at login (needs the .app bundle)" = "Launch at login (needs the .app bundle)";
 "Idle" = "Idle";
 "Thinking" = "Thinking";

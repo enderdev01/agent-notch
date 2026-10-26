@@ -71,3 +71,9 @@
 "Click to open folder" = "Klicken, um den Ordner zu öffnen";
 "Click to open terminal" = "Klicken, um das Terminal zu öffnen";
 "+%ld more" = "+%ld weitere";
+"Language" = "Sprache";
+"Match system language" = "Wie das System";
+"Restart Agent Notch?" = "Agent Notch neu starten?";
+"Agent Notch will restart to apply the language. Pending approvals go back to the terminal, and sessions reappear with their next activity." = "Agent Notch wird neu gestartet, um die Sprache zu übernehmen. Ausstehende Freigaben gehen an das Terminal zurück, und Sitzungen erscheinen bei ihrer nächsten Aktivität wieder.";
+"Restart" = "Neu starten";
+"Cancel" = "Abbrechen";
