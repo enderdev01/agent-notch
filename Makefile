@@ -15,6 +15,8 @@ app: build
 	cp packaging/Info.plist "$(APP)/Contents/Info.plist"
 	cp Sources/AgentNotch/Resources/Mascots/*.png "$(APP)/Contents/Resources/"
 	cp packaging/AppIcon.icns "$(APP)/Contents/Resources/"
+	# UI translations (en, es, de): one <language>.lproj per language, picked by the system language.
+	cp -R packaging/locales/*.lproj "$(APP)/Contents/Resources/"
 	# The hook installer ships inside the app: install.sh resolves bridge/ and integrations/ relative to its own folder.
 	mkdir -p "$(APP)/Contents/Resources/scripts"
 	cp -R bridge integrations "$(APP)/Contents/Resources/"

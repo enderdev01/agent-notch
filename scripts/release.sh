@@ -38,6 +38,9 @@ if [ -n "${NOTARY_PROFILE:-}" ]; then
   fi
 fi
 
+# A missing translation would silently fall back to English.
+python3 scripts/check-strings.py
+
 make app
 
 if [ -n "${DEVELOPER_ID:-}" ]; then

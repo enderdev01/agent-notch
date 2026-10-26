@@ -27,12 +27,12 @@ enum SessionStatus: Equatable, Sendable {
 
     var label: String {
         switch self {
-        case .idle: return "Idle"
-        case .thinking: return "Thinking"
-        case .runningTool(let name): return "Running \(name)"
-        case .waitingApproval: return "Waiting for approval"
-        case .done: return "Done"
-        case .failed: return "Failed"
+        case .idle: return L("Idle")
+        case .thinking: return L("Thinking")
+        case .runningTool(let name): return L("Running %@", name)
+        case .waitingApproval: return L("Waiting for approval")
+        case .done: return L("Done")
+        case .failed: return L("Failed")
         }
     }
 }
@@ -90,7 +90,7 @@ struct DayStats: Codable, Equatable, Sendable {
 
 /// Last path component of a working directory, or a placeholder.
 func displayProjectName(from cwd: String?) -> String {
-    guard let cwd, !cwd.isEmpty else { return "Unknown project" }
+    guard let cwd, !cwd.isEmpty else { return L("Unknown project") }
     let name = (cwd as NSString).lastPathComponent
     return name.isEmpty ? cwd : name
 }

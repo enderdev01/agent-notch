@@ -27,7 +27,7 @@ struct ApprovalCard: View {
                     .lineLimit(1)
                 Spacer()
                 if total > 1 {
-                    Text("\(index + 1) of \(total)")
+                    Text(L("%ld of %ld", index + 1, total))
                         .font(.system(size: 11).monospacedDigit())
                         .foregroundStyle(.white.opacity(0.5))
                 }
@@ -49,15 +49,15 @@ struct ApprovalCard: View {
             }
 
             HStack(spacing: 8) {
-                Button { onDecide(.deny) } label: { label("Deny", hint: "\u{2318}\u{232B}") }
+                Button { onDecide(.deny) } label: { label(L("Deny"), hint: "\u{2318}\u{232B}") }
                     .buttonStyle(CardButtonStyle(fill: .white.opacity(0.14), foreground: .white))
                     .keyboardShortcut(.delete, modifiers: .command)
-                Button { onDecide(.allow) } label: { label("Allow", hint: "\u{21A9}") }
+                Button { onDecide(.allow) } label: { label(L("Allow"), hint: "\u{21A9}") }
                     .buttonStyle(CardButtonStyle(fill: request.agent.color, foreground: .black))
                     .keyboardShortcut(.return, modifiers: [])
             }
 
-            Button("Answer in terminal") { onDecide(.terminal) }
+            Button(L("Answer in terminal")) { onDecide(.terminal) }
                 .buttonStyle(.plain)
                 .font(.system(size: 11))
                 .foregroundStyle(.white.opacity(0.55))

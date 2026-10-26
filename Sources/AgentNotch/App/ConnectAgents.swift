@@ -21,19 +21,17 @@ enum ConnectAgents {
         guard installer != nil, !isConnected, !Preferences.connectPromptShown else { return }
         Preferences.connectPromptShown = true
         let alert = NSAlert()
-        alert.messageText = "Connect your agents?"
-        alert.informativeText = "Agent Notch needs a small hook in Claude Code, Codex and Pi to see what they are doing. "
-            + "This adds entries to their config files (backed up once as *.bak-agent-notch). "
-            + "You can do it later from the menu bar item."
-        alert.addButton(withTitle: "Connect")
-        alert.addButton(withTitle: "Not now")
+        alert.messageText = L("Connect your agents?")
+        alert.informativeText = L("Agent Notch needs a small hook in Claude Code, Codex and Pi to see what they are doing. This adds entries to their config files (backed up once as *.bak-agent-notch). You can do it later from the menu bar item.")
+        alert.addButton(withTitle: L("Connect"))
+        alert.addButton(withTitle: L("Not now"))
         NSApp.activate(ignoringOtherApps: true)
         if alert.runModal() == .alertFirstButtonReturn { run() }
     }
 
     static func run() {
         guard let script = installer else {
-            show(title: "Not available", text: "Connect agents needs the bundled app (make app).", style: .warning)
+            show(title: L("Not available"), text: L("Connect agents needs the bundled app (make app)."), style: .warning)
             return
         }
         Task {
@@ -63,20 +61,22 @@ enum ConnectAgents {
         let output = result.output.replacingOccurrences(of: home, with: "~")
         guard result.status == 0 else {
             if output.contains("jq is required") {
-                show(title: "jq is required",
-                     text: "Agent Notch needs jq to edit your agents' config files. macOS 15 and later include it; "
-                         + "on macOS 14 install it with:\n\nbrew install jq\n\nThen choose Connect agents again.",
+                show(title: L("jq is required"),
+                     text: L("Agent Notch needs jq to edit your agents' config files. macOS 15 and later include it; on macOS 14 install it with:\n\nbrew install jq\n\nThen choose Connect agents again."),
                      style: .warning)
             } else {
-                show(title: "Could not connect agents", text: String(output.suffix(600)), style: .warning)
+                show(title: L("Could not connect agents"), text: String(output.suffix(600)), style: .warning)
             }
             return
         }
-        let changes = output.split(separator: "\n")
-            .filter { $0.hasPrefix("installed:") || $0.hasPrefix("updated:") || $0.hasPrefix("unchanged:") }
-            .joined(separator: "\n")
-        show(title: "Agents connected",
-             text: changes + "\n\nRestart any running Claude Code, Codex or Pi session. Codex may ask you to trust the new hooks.",
+        // The installer prints English status words; show them in the user's language.
+        let labels = [("installed:", L("installed:")), ("updated:", L("updated:")), ("unchanged:", L("unchanged:"))]
+        let changes = output.split(separator: "\n").compactMap { line -> String? in
+            guard let (english, local) = labels.first(where: { line.hasPrefix($0.0) }) else { return nil }
+            return local + String(line.dropFirst(english.count))
+        }.joined(separator: "\n")
+        show(title: L("Agents connected"),
+             text: changes + "\n\n" + L("Restart any running Claude Code, Codex or Pi session. Codex may ask you to trust the new hooks."),
              style: .informational)
     }
 

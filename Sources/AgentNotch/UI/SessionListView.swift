@@ -38,7 +38,7 @@ struct SessionListView: View {
 
     /// "Today · ✓ 12 · ✕ 1 · 1h 20m"
     private func summary(_ day: DayStats) -> String {
-        var parts = ["Today", "✓ \(day.done)"]
+        var parts = [L("Today"), "✓ \(day.done)"]
         if day.failed > 0 { parts.append("✕ \(day.failed)") }
         parts.append(Formatting.duration(day.seconds))
         return parts.joined(separator: " · ")
@@ -53,7 +53,7 @@ struct SessionListView: View {
     var body: some View {
         if sessions.isEmpty {
             VStack(spacing: 6) {
-                Text("No active agents")
+                Text(L("No active agents"))
                     .font(.system(size: 12))
                     .foregroundStyle(.white.opacity(0.5))
                 ForEach(AgentKind.allCases.filter { stats($0) != nil }, id: \.self) { agent in
@@ -175,7 +175,7 @@ struct SessionRow: View {
                 statusText("\(session.status.label) · \(Formatting.clock(context.date.timeIntervalSince(start)))")
             }
         } else {
-            statusText(yourTurn ? "Your turn" : session.status.label)
+            statusText(yourTurn ? L("Your turn") : session.status.label)
         }
     }
 
@@ -203,9 +203,9 @@ struct SessionDetail: View {
                     .foregroundStyle(.white)
                     .lineLimit(1)
             }
-            if let prompt = session.prompt, !prompt.isEmpty { block("YOU", ReplyText.detail(prompt, limit: 120), lines: 2) }
+            if let prompt = session.prompt, !prompt.isEmpty { block(L("YOU"), ReplyText.detail(prompt, limit: 120), lines: 2) }
             if let reply = session.reply, !reply.isEmpty {
-                block(failed ? "ERROR" : "REPLY", ReplyText.detail(reply, limit: 330), lines: 6,
+                block(failed ? L("ERROR") : L("REPLY"), ReplyText.detail(reply, limit: 330), lines: 6,
                       tint: failed ? Color(hex: 0xFF8A8D) : .white.opacity(0.8))
             }
             if let cwd = session.cwd, !cwd.isEmpty {
@@ -218,7 +218,7 @@ struct SessionDetail: View {
             HStack(spacing: 8) {
                 if let reply = session.reply, !reply.isEmpty {
                     Button { Self.copy(reply) } label: {
-                        Text("Copy reply")
+                        Text(L("Copy reply"))
                             .font(.system(size: 10, weight: .medium))
                             .padding(.horizontal, 8).padding(.vertical, 3)
                             .background(Capsule().fill(.white.opacity(0.12)))
@@ -226,7 +226,7 @@ struct SessionDetail: View {
                     .buttonStyle(.plain)
                 }
                 if session.cwd != nil {
-                    Text(session.terminal == nil ? "Click to open folder" : "Click to open terminal")
+                    Text(session.terminal == nil ? L("Click to open folder") : L("Click to open terminal"))
                         .font(.system(size: 10))
                         .foregroundStyle(.white.opacity(0.3))
                 }

@@ -6,19 +6,19 @@ import ServiceManagement
 final class StatusMenu: NSObject {
     private let store: SessionStore
     private let item = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
-    private let pauseItem = NSMenuItem(title: "Pause approvals (always fall back to terminal)", action: nil, keyEquivalent: "")
-    private let soundItem = NSMenuItem(title: "Play sound when an agent finishes", action: nil, keyEquivalent: "")
-    private let approvalSoundItem = NSMenuItem(title: "Play sound when approval is needed", action: nil, keyEquivalent: "")
-    private let idleItem = NSMenuItem(title: "Show mascot when idle", action: nil, keyEquivalent: "")
-    private let volumeItem = NSMenuItem(title: "Sound volume", action: nil, keyEquivalent: "")
-    private let sleepItem = NSMenuItem(title: "Mascot falls asleep after", action: nil, keyEquivalent: "")
-    private let yourTurnItem = NSMenuItem(title: "\"Your turn\" mark lasts", action: nil, keyEquivalent: "")
-    private let loginItem = NSMenuItem(title: "Launch at login", action: nil, keyEquivalent: "")
+    private let pauseItem = NSMenuItem(title: L("Pause approvals (always fall back to terminal)"), action: nil, keyEquivalent: "")
+    private let soundItem = NSMenuItem(title: L("Play sound when an agent finishes"), action: nil, keyEquivalent: "")
+    private let approvalSoundItem = NSMenuItem(title: L("Play sound when approval is needed"), action: nil, keyEquivalent: "")
+    private let idleItem = NSMenuItem(title: L("Show mascot when idle"), action: nil, keyEquivalent: "")
+    private let volumeItem = NSMenuItem(title: L("Sound volume"), action: nil, keyEquivalent: "")
+    private let sleepItem = NSMenuItem(title: L("Mascot falls asleep after"), action: nil, keyEquivalent: "")
+    private let yourTurnItem = NSMenuItem(title: L("\"Your turn\" mark lasts"), action: nil, keyEquivalent: "")
+    private let loginItem = NSMenuItem(title: L("Launch at login"), action: nil, keyEquivalent: "")
 
-    private static let volumeChoices: [(title: String, value: Double)] = [("Quiet", 0.15), ("Normal", 0.3), ("Loud", 0.6)]
-    private static let sleepChoices: [(title: String, value: Double)] = [("30 seconds", 30), ("1 minute", 60), ("3 minutes", 180)]
+    private static let volumeChoices: [(title: String, value: Double)] = [(L("Quiet"), 0.15), (L("Normal"), 0.3), (L("Loud"), 0.6)]
+    private static let sleepChoices: [(title: String, value: Double)] = [(L("30 seconds"), 30), (L("1 minute"), 60), (L("3 minutes"), 180)]
     private static let yourTurnChoices: [(title: String, value: Double)] = [
-        ("Off", 0), ("2 minutes", 120), ("5 minutes", 300), ("15 minutes", 900), ("30 minutes", 1800),
+        (L("Off"), 0), (L("2 minutes"), 120), (L("5 minutes"), 300), (L("15 minutes"), 900), (L("30 minutes"), 1800),
     ]
 
     init(store: SessionStore) {
@@ -35,9 +35,9 @@ final class StatusMenu: NSObject {
         volumeItem.submenu = choiceMenu(Self.volumeChoices, action: #selector(pickVolume(_:)))
         sleepItem.submenu = choiceMenu(Self.sleepChoices, action: #selector(pickSleep(_:)))
         yourTurnItem.submenu = choiceMenu(Self.yourTurnChoices, action: #selector(pickYourTurn(_:)))
-        let quit = NSMenuItem(title: "Quit Agent Notch", action: #selector(quit), keyEquivalent: "q")
+        let quit = NSMenuItem(title: L("Quit Agent Notch"), action: #selector(quit), keyEquivalent: "q")
         quit.target = self
-        let connect = NSMenuItem(title: "Connect agents…", action: #selector(connectAgents), keyEquivalent: "")
+        let connect = NSMenuItem(title: L("Connect agents…"), action: #selector(connectAgents), keyEquivalent: "")
         connect.target = self
         [connect, .separator(), pauseItem, .separator(), soundItem, approvalSoundItem, volumeItem, .separator(), idleItem, sleepItem,
          yourTurnItem, .separator(), loginItem, .separator(), quit].forEach(menu.addItem)
@@ -97,8 +97,8 @@ final class StatusMenu: NSObject {
             }
         } catch {
             let alert = NSAlert()
-            alert.messageText = "Could not change launch at login"
-            alert.informativeText = "\(error.localizedDescription)\n\nThis only works when running the bundled app (make app)."
+            alert.messageText = L("Could not change launch at login")
+            alert.informativeText = "\(error.localizedDescription)\n\n" + L("This only works when running the bundled app (make app).")
             alert.runModal()
         }
     }
@@ -120,6 +120,6 @@ extension StatusMenu: NSMenuDelegate {
         let bundled = Bundle.main.bundleURL.pathExtension == "app"
         loginItem.isEnabled = bundled
         loginItem.state = bundled && SMAppService.mainApp.status == .enabled ? .on : .off
-        loginItem.title = bundled ? "Launch at login" : "Launch at login (needs the .app bundle)"
+        loginItem.title = bundled ? L("Launch at login") : L("Launch at login (needs the .app bundle)")
     }
 }

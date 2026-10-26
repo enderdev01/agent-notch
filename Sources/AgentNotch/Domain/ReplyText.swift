@@ -52,12 +52,13 @@ enum ReplyText {
     private static let askPhrases = [
         "your call", "let me know", "need your", "your input", "please confirm", "waiting for you",
         "dime", "confirma", "necesito tu", "tú decides", "tu decisión",
+        "sag mir", "gib mir bescheid", "deine entscheidung", "deine wahl", "bitte bestätige", "ich brauche dein",
     ]
 
     /// Human text for the error codes Claude Code reports in `StopFailure`; other text passes through.
     static func error(_ raw: String?) -> String {
         guard let raw = raw?.trimmingCharacters(in: .whitespacesAndNewlines), !raw.isEmpty else {
-            return "Turn ended with an error"
+            return L("Turn ended with an error")
         }
         return errorTexts[raw] ?? raw
     }
@@ -66,18 +67,18 @@ enum ReplyText {
     static func isKnownError(_ raw: String?) -> Bool { raw.map { errorTexts[$0] != nil } ?? false }
 
     private static let errorTexts: [String: String] = [
-        "rate_limit": "Rate limit reached",
-        "overloaded": "The model is overloaded",
-        "authentication_failed": "Not signed in",
-        "oauth_org_not_allowed": "This organization is not allowed",
-        "account_on_hold": "Account on hold",
-        "billing_error": "Billing problem",
-        "invalid_request": "Invalid request",
-        "model_not_found": "Model not found",
-        "server_error": "Server error",
-        "max_output_tokens": "Hit the output limit",
-        "cloud_credential_error": "Cloud credentials problem",
-        "unknown": "Unknown error",
+        "rate_limit": L("Rate limit reached"),
+        "overloaded": L("The model is overloaded"),
+        "authentication_failed": L("Not signed in"),
+        "oauth_org_not_allowed": L("This organization is not allowed"),
+        "account_on_hold": L("Account on hold"),
+        "billing_error": L("Billing problem"),
+        "invalid_request": L("Invalid request"),
+        "model_not_found": L("Model not found"),
+        "server_error": L("Server error"),
+        "max_output_tokens": L("Hit the output limit"),
+        "cloud_credential_error": L("Cloud credentials problem"),
+        "unknown": L("Unknown error"),
     ]
 
     // MARK: Private

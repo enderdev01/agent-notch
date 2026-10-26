@@ -106,7 +106,7 @@ struct StepList: View {
                 }
             }
             if steps.count > Self.maxRows {
-                Text("+\(steps.count - shown.count) more")
+                Text(L("+%ld more", steps.count - shown.count))
                     .font(.system(size: 10))
                     .foregroundStyle(.white.opacity(0.35))
             }
