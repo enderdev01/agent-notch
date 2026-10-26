@@ -66,9 +66,65 @@ Einige Sekunden nach dem Ende eines Durchlaufs erscheint unter dem Notch eine le
 
 Jeder Agent hat ein Pixel-Art-Maskottchen, das auf sein Verhalten reagiert: arbeitet, wartet auf Sie, fertig, fehlgeschlagen sowie schläfrig oder schlafend im Leerlauf.
 
+Das Maskottchen von Gentle Shell zeigt bei der Arbeit auch die ODD-Phase, die der Agent mit seinem Tool `gentle_odd_phase` meldet: eine Lupe beim Erkunden oder Recherchieren, eine Glühbirne beim Autorisieren, Entscheiden oder Planen, ein Klemmbrett beim Prüfen und ein Geschenk beim Abschließen. Beim Implementieren bleibt die normale Arbeitspose. Phasen, die Gentle Shell nur aus der Tool-Aktivität ableitet, werden nicht an Agent Notch gesendet und ändern das Maskottchen daher nicht.
+
 <p align="center">
   <img src="docs/images/mascots.png" alt="Maskottchen von Claude Code, Codex und Gentle Shell in sechs Zuständen" width="700">
 </p>
+
+<details>
+<summary>Zustände des Maskottchens von Claude Code</summary>
+
+| | Zustand | Wann |
+|---|---|---|
+| <img src="Sources/AgentNotch/Resources/Mascots/claude.png" alt="Wach" width="56"> | Wach | Direkt nach Aktivität; es blinzelt hin und wieder. |
+| <img src="Sources/AgentNotch/Resources/Mascots/claude-work.png" alt="Arbeitet" width="56"> | Arbeitet | Ein Durchlauf läuft. Es hüpft. |
+| <img src="Sources/AgentNotch/Resources/Mascots/claude-alert.png" alt="Braucht Sie" width="56"> | Braucht Sie | Wartet auf eine Freigabe oder eine Antwort von Ihnen. |
+| <img src="Sources/AgentNotch/Resources/Mascots/claude-done.png" alt="Fertig" width="56"> | Fertig | Der Durchlauf ist beendet; es feiert. |
+| <img src="Sources/AgentNotch/Resources/Mascots/claude-error.png" alt="Fehlgeschlagen" width="56"> | Fehlgeschlagen | Der Durchlauf ist fehlgeschlagen, zum Beispiel wegen eines Limits. |
+| <img src="Sources/AgentNotch/Resources/Mascots/claude-drowsy.png" alt="Schläfrig" width="56"> | Schläfrig | Eine Weile im Leerlauf; es beginnt einzunicken. |
+| <img src="Sources/AgentNotch/Resources/Mascots/claude-sleep.png" alt="Schlafend" width="56"> | Schlafend | Lange genug im Leerlauf (die Dauer stellen Sie im Menü ein). |
+
+</details>
+
+<details>
+<summary>Zustände des Maskottchens von Codex</summary>
+
+| | Zustand | Wann |
+|---|---|---|
+| <img src="Sources/AgentNotch/Resources/Mascots/codex.png" alt="Wach" width="56"> | Wach | Direkt nach Aktivität; es blinzelt hin und wieder. |
+| <img src="Sources/AgentNotch/Resources/Mascots/codex-work.png" alt="Arbeitet" width="56"> | Arbeitet | Ein Durchlauf läuft. Es tippt. |
+| <img src="Sources/AgentNotch/Resources/Mascots/codex-alert.png" alt="Braucht Sie" width="56"> | Braucht Sie | Wartet auf eine Freigabe oder eine Antwort von Ihnen. |
+| <img src="Sources/AgentNotch/Resources/Mascots/codex-done.png" alt="Fertig" width="56"> | Fertig | Der Durchlauf ist beendet; es feiert. |
+| <img src="Sources/AgentNotch/Resources/Mascots/codex-error.png" alt="Fehlgeschlagen" width="56"> | Fehlgeschlagen | Der Durchlauf ist fehlgeschlagen, zum Beispiel wegen eines Limits. |
+| <img src="Sources/AgentNotch/Resources/Mascots/codex-drowsy.png" alt="Schläfrig" width="56"> | Schläfrig | Eine Weile im Leerlauf; es beginnt einzunicken. |
+| <img src="Sources/AgentNotch/Resources/Mascots/codex-sleep.png" alt="Schlafend" width="56"> | Schlafend | Lange genug im Leerlauf (die Dauer stellen Sie im Menü ein). |
+
+</details>
+
+<details>
+<summary>Zustände des Maskottchens von Gentle Shell</summary>
+
+| | Zustand | Wann |
+|---|---|---|
+| <img src="Sources/AgentNotch/Resources/Mascots/gentle.png" alt="Wach" width="56"> | Wach | Direkt nach Aktivität; es blinzelt hin und wieder. |
+| <img src="Sources/AgentNotch/Resources/Mascots/gentle-work.png" alt="Arbeitet" width="56"> | Arbeitet | Ein Durchlauf läuft. Es wiegt sich wie ein Blatt. |
+| <img src="Sources/AgentNotch/Resources/Mascots/gentle-alert.png" alt="Braucht Sie" width="56"> | Braucht Sie | Wartet auf eine Freigabe oder eine Antwort von Ihnen. |
+| <img src="Sources/AgentNotch/Resources/Mascots/gentle-done.png" alt="Fertig" width="56"> | Fertig | Der Durchlauf ist beendet; es feiert. |
+| <img src="Sources/AgentNotch/Resources/Mascots/gentle-error.png" alt="Fehlgeschlagen" width="56"> | Fehlgeschlagen | Der Durchlauf ist fehlgeschlagen, zum Beispiel wegen eines Limits. |
+| <img src="Sources/AgentNotch/Resources/Mascots/gentle-drowsy.png" alt="Schläfrig" width="56"> | Schläfrig | Eine Weile im Leerlauf; es beginnt einzunicken. |
+| <img src="Sources/AgentNotch/Resources/Mascots/gentle-sleep.png" alt="Schlafend" width="56"> | Schlafend | Lange genug im Leerlauf (die Dauer stellen Sie im Menü ein). |
+
+Während der Arbeit zeigt Gentle Shell auch die Phase, die es mit `gentle_odd_phase` meldet:
+
+| | Phase | Wann |
+|---|---|---|
+| <img src="Sources/AgentNotch/Resources/Mascots/gentle-work-explore.png" alt="Exploring, researching" width="56"> | Exploring, researching | Sieht sich den Code an oder recherchiert. |
+| <img src="Sources/AgentNotch/Resources/Mascots/gentle-work-think.png" alt="Authorizing, deciding, planning" width="56"> | Authorizing, deciding, planning | Denkt nach, bevor es etwas anfasst. |
+| <img src="Sources/AgentNotch/Resources/Mascots/gentle-work-check.png" alt="Checking" width="56"> | Checking | Prüft die Arbeit. |
+| <img src="Sources/AgentNotch/Resources/Mascots/gentle-work-close.png" alt="Closing" width="56"> | Closing | Schließt den Durchlauf ab. |
+
+</details>
 
 ## Kompatibel mit
 

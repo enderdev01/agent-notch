@@ -70,6 +70,60 @@ Gentle Shell's mascot also shows the ODD phase the agent reports with its `gentl
   <img src="docs/images/mascots.png" alt="Mascots for Claude Code, Codex and Gentle Shell in six states" width="700">
 </p>
 
+<details>
+<summary>Claude Code mascot states</summary>
+
+| | State | When |
+|---|---|---|
+| <img src="Sources/AgentNotch/Resources/Mascots/claude.png" alt="Awake" width="56"> | Awake | Right after activity; it blinks now and then. |
+| <img src="Sources/AgentNotch/Resources/Mascots/claude-work.png" alt="Working" width="56"> | Working | A turn is running. It hops. |
+| <img src="Sources/AgentNotch/Resources/Mascots/claude-alert.png" alt="Needs you" width="56"> | Needs you | Waiting for an approval or an answer from you. |
+| <img src="Sources/AgentNotch/Resources/Mascots/claude-done.png" alt="Done" width="56"> | Done | The turn finished; it celebrates. |
+| <img src="Sources/AgentNotch/Resources/Mascots/claude-error.png" alt="Failed" width="56"> | Failed | The turn failed, for example a rate limit. |
+| <img src="Sources/AgentNotch/Resources/Mascots/claude-drowsy.png" alt="Drowsy" width="56"> | Drowsy | Idle for a while; it starts nodding off. |
+| <img src="Sources/AgentNotch/Resources/Mascots/claude-sleep.png" alt="Asleep" width="56"> | Asleep | Idle long enough (you choose how long in the menu). |
+
+</details>
+
+<details>
+<summary>Codex mascot states</summary>
+
+| | State | When |
+|---|---|---|
+| <img src="Sources/AgentNotch/Resources/Mascots/codex.png" alt="Awake" width="56"> | Awake | Right after activity; it blinks now and then. |
+| <img src="Sources/AgentNotch/Resources/Mascots/codex-work.png" alt="Working" width="56"> | Working | A turn is running. It types. |
+| <img src="Sources/AgentNotch/Resources/Mascots/codex-alert.png" alt="Needs you" width="56"> | Needs you | Waiting for an approval or an answer from you. |
+| <img src="Sources/AgentNotch/Resources/Mascots/codex-done.png" alt="Done" width="56"> | Done | The turn finished; it celebrates. |
+| <img src="Sources/AgentNotch/Resources/Mascots/codex-error.png" alt="Failed" width="56"> | Failed | The turn failed, for example a rate limit. |
+| <img src="Sources/AgentNotch/Resources/Mascots/codex-drowsy.png" alt="Drowsy" width="56"> | Drowsy | Idle for a while; it starts nodding off. |
+| <img src="Sources/AgentNotch/Resources/Mascots/codex-sleep.png" alt="Asleep" width="56"> | Asleep | Idle long enough (you choose how long in the menu). |
+
+</details>
+
+<details>
+<summary>Gentle Shell mascot states</summary>
+
+| | State | When |
+|---|---|---|
+| <img src="Sources/AgentNotch/Resources/Mascots/gentle.png" alt="Awake" width="56"> | Awake | Right after activity; it blinks now and then. |
+| <img src="Sources/AgentNotch/Resources/Mascots/gentle-work.png" alt="Working" width="56"> | Working | A turn is running. It sways like a leaf. |
+| <img src="Sources/AgentNotch/Resources/Mascots/gentle-alert.png" alt="Needs you" width="56"> | Needs you | Waiting for an approval or an answer from you. |
+| <img src="Sources/AgentNotch/Resources/Mascots/gentle-done.png" alt="Done" width="56"> | Done | The turn finished; it celebrates. |
+| <img src="Sources/AgentNotch/Resources/Mascots/gentle-error.png" alt="Failed" width="56"> | Failed | The turn failed, for example a rate limit. |
+| <img src="Sources/AgentNotch/Resources/Mascots/gentle-drowsy.png" alt="Drowsy" width="56"> | Drowsy | Idle for a while; it starts nodding off. |
+| <img src="Sources/AgentNotch/Resources/Mascots/gentle-sleep.png" alt="Asleep" width="56"> | Asleep | Idle long enough (you choose how long in the menu). |
+
+While it works, Gentle Shell also shows the phase it reports with `gentle_odd_phase`:
+
+| | Phase | When |
+|---|---|---|
+| <img src="Sources/AgentNotch/Resources/Mascots/gentle-work-explore.png" alt="Exploring, researching" width="56"> | Exploring, researching | Looking around the code or looking things up. |
+| <img src="Sources/AgentNotch/Resources/Mascots/gentle-work-think.png" alt="Authorizing, deciding, planning" width="56"> | Authorizing, deciding, planning | Thinking before touching anything. |
+| <img src="Sources/AgentNotch/Resources/Mascots/gentle-work-check.png" alt="Checking" width="56"> | Checking | Verifying the work. |
+| <img src="Sources/AgentNotch/Resources/Mascots/gentle-work-close.png" alt="Closing" width="56"> | Closing | Wrapping up the turn. |
+
+</details>
+
 ## Works with
 
 | | Claude Code | Codex CLI | Pi / Gentle Shell |

@@ -66,9 +66,65 @@ Durante unos segundos después de que termina un turno, una línea legible de la
 
 Cada agente tiene una mascota de pixel art que reacciona a lo que hace: trabajando, esperándote, terminado, fallido, y adormilada o dormida cuando está inactivo.
 
+La mascota de Gentle Shell también muestra la fase ODD que el agente reporta con su herramienta `gentle_odd_phase` mientras trabaja: una lupa al explorar o investigar, un foco al autorizar, decidir o planificar, una libreta al verificar y una caja de regalo al cerrar. Al implementar mantiene la pose de trabajo normal. Las fases que Gentle Shell solo infiere por la actividad de sus herramientas no llegan a Agent Notch, así que no cambian la mascota.
+
 <p align="center">
   <img src="docs/images/mascots.png" alt="Mascotas de Claude Code, Codex y Gentle Shell en seis estados" width="700">
 </p>
+
+<details>
+<summary>Estados de la mascota de Claude Code</summary>
+
+| | Estado | Cuándo |
+|---|---|---|
+| <img src="Sources/AgentNotch/Resources/Mascots/claude.png" alt="Despierta" width="56"> | Despierta | Justo después de actividad; parpadea de vez en cuando. |
+| <img src="Sources/AgentNotch/Resources/Mascots/claude-work.png" alt="Trabajando" width="56"> | Trabajando | Hay un turno en curso. Da saltitos. |
+| <img src="Sources/AgentNotch/Resources/Mascots/claude-alert.png" alt="Te necesita" width="56"> | Te necesita | Espera una aprobación o una respuesta tuya. |
+| <img src="Sources/AgentNotch/Resources/Mascots/claude-done.png" alt="Terminado" width="56"> | Terminado | El turno terminó; lo celebra. |
+| <img src="Sources/AgentNotch/Resources/Mascots/claude-error.png" alt="Fallido" width="56"> | Fallido | El turno falló, por ejemplo por un límite de uso. |
+| <img src="Sources/AgentNotch/Resources/Mascots/claude-drowsy.png" alt="Adormilada" width="56"> | Adormilada | Lleva un rato inactivo; empieza a cabecear. |
+| <img src="Sources/AgentNotch/Resources/Mascots/claude-sleep.png" alt="Dormida" width="56"> | Dormida | Lleva suficiente tiempo inactivo (tú eliges cuánto en el menú). |
+
+</details>
+
+<details>
+<summary>Estados de la mascota de Codex</summary>
+
+| | Estado | Cuándo |
+|---|---|---|
+| <img src="Sources/AgentNotch/Resources/Mascots/codex.png" alt="Despierta" width="56"> | Despierta | Justo después de actividad; parpadea de vez en cuando. |
+| <img src="Sources/AgentNotch/Resources/Mascots/codex-work.png" alt="Trabajando" width="56"> | Trabajando | Hay un turno en curso. Teclea. |
+| <img src="Sources/AgentNotch/Resources/Mascots/codex-alert.png" alt="Te necesita" width="56"> | Te necesita | Espera una aprobación o una respuesta tuya. |
+| <img src="Sources/AgentNotch/Resources/Mascots/codex-done.png" alt="Terminado" width="56"> | Terminado | El turno terminó; lo celebra. |
+| <img src="Sources/AgentNotch/Resources/Mascots/codex-error.png" alt="Fallido" width="56"> | Fallido | El turno falló, por ejemplo por un límite de uso. |
+| <img src="Sources/AgentNotch/Resources/Mascots/codex-drowsy.png" alt="Adormilada" width="56"> | Adormilada | Lleva un rato inactivo; empieza a cabecear. |
+| <img src="Sources/AgentNotch/Resources/Mascots/codex-sleep.png" alt="Dormida" width="56"> | Dormida | Lleva suficiente tiempo inactivo (tú eliges cuánto en el menú). |
+
+</details>
+
+<details>
+<summary>Estados de la mascota de Gentle Shell</summary>
+
+| | Estado | Cuándo |
+|---|---|---|
+| <img src="Sources/AgentNotch/Resources/Mascots/gentle.png" alt="Despierta" width="56"> | Despierta | Justo después de actividad; parpadea de vez en cuando. |
+| <img src="Sources/AgentNotch/Resources/Mascots/gentle-work.png" alt="Trabajando" width="56"> | Trabajando | Hay un turno en curso. Se mece como una hoja. |
+| <img src="Sources/AgentNotch/Resources/Mascots/gentle-alert.png" alt="Te necesita" width="56"> | Te necesita | Espera una aprobación o una respuesta tuya. |
+| <img src="Sources/AgentNotch/Resources/Mascots/gentle-done.png" alt="Terminado" width="56"> | Terminado | El turno terminó; lo celebra. |
+| <img src="Sources/AgentNotch/Resources/Mascots/gentle-error.png" alt="Fallido" width="56"> | Fallido | El turno falló, por ejemplo por un límite de uso. |
+| <img src="Sources/AgentNotch/Resources/Mascots/gentle-drowsy.png" alt="Adormilada" width="56"> | Adormilada | Lleva un rato inactivo; empieza a cabecear. |
+| <img src="Sources/AgentNotch/Resources/Mascots/gentle-sleep.png" alt="Dormida" width="56"> | Dormida | Lleva suficiente tiempo inactivo (tú eliges cuánto en el menú). |
+
+Mientras trabaja, Gentle Shell también muestra la fase que reporta con `gentle_odd_phase`:
+
+| | Fase | Cuándo |
+|---|---|---|
+| <img src="Sources/AgentNotch/Resources/Mascots/gentle-work-explore.png" alt="Exploring, researching" width="56"> | Exploring, researching | Recorre el código o busca información. |
+| <img src="Sources/AgentNotch/Resources/Mascots/gentle-work-think.png" alt="Authorizing, deciding, planning" width="56"> | Authorizing, deciding, planning | Piensa antes de tocar nada. |
+| <img src="Sources/AgentNotch/Resources/Mascots/gentle-work-check.png" alt="Checking" width="56"> | Checking | Verifica el trabajo. |
+| <img src="Sources/AgentNotch/Resources/Mascots/gentle-work-close.png" alt="Closing" width="56"> | Closing | Cierra el turno. |
+
+</details>
 
 ## Compatible con
 
