@@ -9,10 +9,17 @@ struct SessionListView: View {
     /// Id of the row under the mouse; that row shows its full prompt and reply.
     @Binding var hovered: String?
 
-    private var groups: [(AgentKind, [AgentSession])] {
-        AgentKind.allCases.compactMap { agent in
+    /// Both agent groups and their sessions show the most recent activity first.
+    var groups: [(AgentKind, [AgentSession])] {
+        let groups: [(AgentKind, [AgentSession])] = AgentKind.allCases.compactMap { agent in
             let items = sessions.filter { $0.agent == agent }.sorted { $0.updatedAt > $1.updatedAt }
             return items.isEmpty ? nil : (agent, items)
+        }
+        return groups.sorted {
+            let lhs = $0.1.first?.updatedAt ?? .distantPast
+            let rhs = $1.1.first?.updatedAt ?? .distantPast
+            if lhs == rhs { return $0.0.rawValue < $1.0.rawValue }
+            return lhs > rhs
         }
     }
 

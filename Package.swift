@@ -9,7 +9,8 @@ let package = Package(
             name: "AgentNotch",
             path: "Sources/AgentNotch",
             exclude: ["Resources"]
-        )
+        ),
+        .testTarget(name: "AgentNotchTests", dependencies: ["AgentNotch"])
     ],
     swiftLanguageModes: [.v5]
 )

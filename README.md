@@ -38,7 +38,7 @@ When an agent keeps a task list, every step shows a spinner while it runs and a 
 
 ### Hover for the full picture
 
-Hover the notch to expand it: sessions grouped by agent, today's summary per agent (turns finished, failed, time worked), and, for the row under your pointer, the full prompt and reply in a card that never moves the list. **Copy reply** copies the whole answer. Click a row to jump to the terminal the agent runs in.
+Hover the notch to expand it: sessions grouped by agent (most recently active agent first, newest sessions first within each group), today's summary per agent (turns finished, failed, time worked), and, for the row under your pointer, the full prompt and reply in a card that never moves the list. **Copy reply** copies the whole answer. Click a row to jump to the terminal the agent runs in.
 
 <p align="center">
   <img src="docs/images/detail.png" alt="The expanded notch with a session list and the detail card of the hovered row" width="440">
