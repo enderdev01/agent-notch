@@ -7,6 +7,7 @@ enum HookPayloadDecoder {
             return nil
         }
         let parsed = steps(toolInput: object["tool_input"])
+        let edit = stepEdit(toolName: object["tool_name"] as? String, toolInput: object["tool_input"])
         let asked = question(toolName: object["tool_name"] as? String, toolInput: object["tool_input"])
         let reported = phase(toolName: object["tool_name"] as? String, toolInput: object["tool_input"])
         return HookEvent(
@@ -16,13 +17,23 @@ enum HookPayloadDecoder {
             cwd: object["cwd"] as? String,
             toolName: object["tool_name"] as? String,
             // A task-list update is shown as steps, not as raw JSON in the row.
-            toolSummary: parsed == nil && asked == nil && reported == nil ? summarize(toolInput: object["tool_input"]) : nil,
+            toolSummary: parsed == nil && edit == nil && asked == nil && reported == nil ? summarize(toolInput: object["tool_input"]) : nil,
             prompt: object["prompt"] as? String,
             message: (object["message"] as? String) ?? (object["error"] as? String),
             lastAssistantMessage: object["last_assistant_message"] as? String,
             steps: parsed,
+            stepEdit: edit,
             question: asked,
             phase: reported)
+    }
+
+    /// The desktop app's `update_plan` after the first call only sends `{advance}` / `{done, start}`; `wrap_up` closes the list.
+    static func stepEdit(toolName: String?, toolInput: Any?) -> StepEdit? {
+        guard let name = toolName else { return nil }
+        if name.hasSuffix("__wrap_up") { return StepEdit(finishAll: true) }
+        guard name.hasSuffix("__update_plan"), let dict = toolInput as? [String: Any] else { return nil }
+        let edit = StepEdit(advance: dict["advance"] as? Bool ?? false, done: dict["done"] as? [Int] ?? [], start: dict["start"] as? Int)
+        return edit.advance || !edit.done.isEmpty || edit.start != nil ? edit : nil
     }
 
     /// Gentle Shell reports its ODD phase with the `gentle_odd_phase` tool: `{phase: "checking"}` or `{phase: "clear"}`.
@@ -40,10 +51,11 @@ enum HookPayloadDecoder {
         return AskedQuestion(text: text, options: options, more: items.count - 1)
     }
 
-    /// Claude `TodoWrite` sends `todos` [{content, activeForm, status}]; Codex `update_plan` sends `plan` [{step, status}].
+    /// Claude `TodoWrite` sends `todos` [{content, activeForm, status}]; Codex `update_plan` sends `plan` [{step, status}];
+    /// the Claude desktop app's task list (`update_plan` MCP tool) sends `items` [{content, status}].
     static func steps(toolInput: Any?) -> [Step]? {
         guard let dict = toolInput as? [String: Any] else { return nil }
-        guard let items = (dict["todos"] ?? dict["plan"]) as? [[String: Any]] else { return nil }
+        guard let items = (dict["todos"] ?? dict["plan"] ?? dict["items"]) as? [[String: Any]] else { return nil }
         return items.compactMap { item in
             let state: Step.State
             switch item["status"] as? String {

@@ -30,7 +30,7 @@ It runs locally, listens only on `127.0.0.1`, and never sends anything anywhere.
 
 ### Follow the work, step by step
 
-When an agent keeps a task list, every step shows a spinner while it runs and a check when it is done, with the active step and an `n/m` counter. A timer runs while the agent works.
+When an agent keeps a task list, every step shows a spinner while it runs and a check when it is done, with the active step and an `n/m` counter. A timer runs while the agent works. Claude desktop MCP tools ending in `__update_plan` can create the list with `items`, then update it with `advance` (finish the running step and start the next pending one), or `done` and `start` (1-based step numbers). Tools ending in `__wrap_up` mark every step done. Incremental changes apply on `PreToolUse` only, so `PostToolUse` does not advance the list again.
 
 <p align="center">
   <img src="docs/images/steps.gif" alt="The collapsed notch showing a task list advancing step by step" width="340">
@@ -38,7 +38,7 @@ When an agent keeps a task list, every step shows a spinner while it runs and a 
 
 ### Hover for the full picture
 
-Hover the notch to expand it: sessions grouped by agent, today's summary per agent (turns finished, failed, time worked), and, for the row under your pointer, the full prompt and reply in a card that never moves the list. **Copy reply** copies the whole answer. Click a row to jump to the terminal the agent runs in.
+Hover the notch to expand it: sessions grouped by agent (most recently active agent first, newest sessions first within each group), today's summary per agent (turns finished, failed, time worked), and, for the row under your pointer, the full prompt and reply in a card that never moves the list. **Copy reply** copies the whole answer. Click a row to jump to the terminal the agent runs in.
 
 <p align="center">
   <img src="docs/images/detail.png" alt="The expanded notch with a session list and the detail card of the hovered row" width="440">
