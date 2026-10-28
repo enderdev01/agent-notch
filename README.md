@@ -30,7 +30,7 @@ It runs locally, listens only on `127.0.0.1`, and never sends anything anywhere.
 
 ### Follow the work, step by step
 
-When an agent keeps a task list, every step shows a spinner while it runs and a check when it is done, with the active step and an `n/m` counter. A timer runs while the agent works.
+When an agent keeps a task list, every step shows a spinner while it runs and a check when it is done, with the active step and an `n/m` counter. A timer runs while the agent works. Claude desktop MCP tools ending in `__update_plan` can create the list with `items`, then update it with `advance` (finish the running step and start the next pending one), or `done` and `start` (1-based step numbers). Tools ending in `__wrap_up` mark every step done. Incremental changes apply on `PreToolUse` only, so `PostToolUse` does not advance the list again.
 
 <p align="center">
   <img src="docs/images/steps.gif" alt="The collapsed notch showing a task list advancing step by step" width="340">

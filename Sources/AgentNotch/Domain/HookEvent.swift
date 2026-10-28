@@ -13,6 +13,29 @@ struct AskedQuestion: Equatable, Sendable {
     var reply: String { ([text] + options.map { "• \($0)" }).joined(separator: "\n") }
 }
 
+/// Incremental task-list update from the Claude desktop app: `update_plan` with `advance` / `done` / `start` (1-based), or `wrap_up`.
+struct StepEdit: Equatable, Sendable {
+    var advance = false
+    var done: [Int] = []
+    var start: Int? = nil
+    var finishAll = false
+
+    func apply(to steps: [Step]) -> [Step] {
+        var steps = steps
+        func set(_ i: Int, _ state: Step.State) {
+            if steps.indices.contains(i) { steps[i] = Step(title: steps[i].title, state: state) }
+        }
+        if finishAll { steps.indices.forEach { set($0, .done) }; return steps }
+        if advance {
+            if let running = steps.firstIndex(where: { $0.state == .running }) { set(running, .done) }
+            if let next = steps.firstIndex(where: { $0.state == .pending }) { set(next, .running) }
+        }
+        done.forEach { set($0 - 1, .done) }
+        if let start { set(start - 1, .running) }
+        return steps
+    }
+}
+
 /// Normalized lifecycle event, Claude-hook style, produced from any agent's payload.
 struct HookEvent: Sendable {
     let agent: AgentKind
@@ -26,6 +49,8 @@ struct HookEvent: Sendable {
     let lastAssistantMessage: String?
     /// Task list carried by the tool input, when the tool is a todo/plan update.
     var steps: [Step]? = nil
+    /// Incremental change to the task list already shown (the desktop app's `update_plan` without `items`, or `wrap_up`).
+    var stepEdit: StepEdit? = nil
     /// The question Claude is asking the user, when the tool is `AskUserQuestion`.
     var question: AskedQuestion? = nil
     /// ODD phase Gentle Shell reported through `gentle_odd_phase` (or "clear" to leave it).

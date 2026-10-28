@@ -101,6 +101,8 @@ final class SessionStore: ObservableObject {
             if session.turnStartedAt == nil { session.turnStartedAt = Date() }
             if let s = event.toolSummary, !s.isEmpty { session.lastMessage = s }
             if let steps = event.steps { session.steps = steps }
+            // Edits are not idempotent (advance), so apply them once, on PreToolUse only.
+            if let edit = event.stepEdit { session.steps = edit.apply(to: session.steps) }
         case "PostToolUse":
             if session.status != .waitingApproval { session.status = .thinking }
             if let steps = event.steps { session.steps = steps }
