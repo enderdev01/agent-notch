@@ -89,7 +89,11 @@ VERCEL_WORKER_URL=https://<worker-host> VERCEL_INTEGRATION_SLUG=<slug> scripts/r
 
 Without those variables the app ships with the Vercel UI hidden and makes no Vercel requests.
 
-## 5. Prove it end to end
+## 5. Verify it end to end
+
+The pairing flow completed once against production on 2026-11-04 (a team installation on
+`agent-notch-vercel.onilabs-dev.workers.dev`), which is how the `redirect: 'error'` rejection in F13
+was found. Repeat this list after any Worker change:
 
 - Connect from a build that has the Worker URL, complete the Vercel flow, and confirm the app says
   connected.

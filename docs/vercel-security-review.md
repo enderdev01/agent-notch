@@ -40,8 +40,11 @@ cleared findings.
 
 1. **Independent review.** This document is not one. Someone who did not write the flow should
    read it against the Vercel integration contract before real users connect.
-2. **No real end-to-end run.** Pairing, callback, polling and revocation have only run against
-   mocks. A test with a throwaway Vercel account and a real deployment is still required.
+2. **Real end-to-end run.** The pairing flow has now completed once against production on
+   2026-11-04 (team installation: `/start` → Vercel authorization → callback → `/status` connected),
+   which is how F13 was found. Still unproven: a personal-account installation, deployment
+   rendering after a real build, disconnect with token revocation, and a run on a clean Mac. Repeat
+   the checklist in `integrations/vercel-worker/README.md` after any change to the Worker.
 3. **Secret handling in Cloudflare.** `VERCEL_CLIENT_SECRET` must be a Worker secret
    (`wrangler secret put`), never a `var` or a committed file; rotation must be documented.
 4. **Privacy promise.** The app currently states it never sends anything anywhere. Shipping this
