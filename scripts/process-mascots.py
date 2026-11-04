@@ -8,6 +8,7 @@ All variants of an agent are cropped with the same box so the mascot keeps its s
 position when it switches between moods.
 """
 from pathlib import Path
+import sys
 from PIL import Image
 
 ROOT = Path(__file__).resolve().parent.parent / "Sources/AgentNotch/Resources"
@@ -28,7 +29,9 @@ def clean(path: Path) -> Image.Image:
 
 def main() -> None:
     OUT.mkdir(parents=True, exist_ok=True)
-    for agent in AGENTS:
+    for agent in sys.argv[1:] or AGENTS:
+        if agent not in [*AGENTS, "vercel"]:
+            raise SystemExit(f"Unknown mascot: {agent}")
         names = [agent] + [f"{agent}-{v}" for v in VARIANTS]
         variants = {n: clean(RAW / f"{n}.png") for n in names if (RAW / f"{n}.png").exists()}
         if not variants:
