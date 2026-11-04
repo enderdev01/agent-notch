@@ -31,9 +31,11 @@ anything the user is looking at, or take focus away from a browser tab.
 4. **No percentage, no invented progress.** Keep the indeterminate indicator and keep
    `reduceMotion` respected. A successful build is not a production promotion; say what
    happened, not what it implies.
-5. **Details on hover only.** Project, repository, commit and author live in the expanded list,
-   which is also where the indeterminate indicator sits. The collapsed badge is the mascot plus
-   a state dot.
+5. **No deployment history in the list.** The expanded notch is for agent sessions; listing every
+   production deployment there buried the sessions under metadata. Deployment detail (project,
+   repository, commit, author) stays in the notification body, and the collapsed badge is the
+   mascot plus a state dot. If a hover summary is ever wanted, it is one line for active
+   deployments only, never the history.
 
 ## Rules for notifications
 

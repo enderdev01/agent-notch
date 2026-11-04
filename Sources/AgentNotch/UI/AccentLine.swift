@@ -24,24 +24,3 @@ struct AccentLine: View {
         }
     }
 }
-
-/// An activity indicator, not a percentage of a deployment.
-struct DeploymentProgress: View {
-    let color: Color
-    let reduceMotion: Bool
-
-    var body: some View {
-        TimelineView(.animation(paused: reduceMotion)) { context in
-            let phase = reduceMotion ? 0.5 : context.date.timeIntervalSinceReferenceDate.truncatingRemainder(dividingBy: 1.8) / 1.8
-            GeometryReader { geometry in
-                Capsule().fill(color.opacity(0.2))
-                    .overlay(alignment: .leading) {
-                        Capsule().fill(color)
-                            .frame(width: geometry.size.width * 0.35)
-                            .offset(x: geometry.size.width * (phase * 1.35 - 0.35))
-                    }
-                    .clipShape(Capsule())
-            }
-        }
-    }
-}
