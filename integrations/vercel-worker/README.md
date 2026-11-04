@@ -96,10 +96,11 @@ The pairing flow completed once against production on 2026-11-04 (a team install
 was found. Repeat this list after any Worker change:
 
 - Connect from a build that has the Worker URL, complete the Vercel flow, and confirm the app says
-  connected.
+  connected. The browser shows a confirmation page you can close.
 - Start a real production deployment from a throwaway repository; watch the badge appear when idle
   and the row in the expanded list.
-- Disconnect, then confirm the Worker session is gone (`/status` returns 401) and the Vercel
-  integration's access was revoked or flagged for manual removal.
+- Disconnect, then confirm the Worker session is gone (`/status` returns 401) and the Worker logs
+  `revoke 200` for the token revocation. If it logs another status, Vercel rejected the revocation
+  for that token and the integration must be removed manually.
 - Restart the app while a deployment runs; the deployment must not notify for work that finished
   while it was closed.

@@ -69,7 +69,8 @@ test('a failing token exchange answers 502 instead of throwing a 1101', async ()
   try {
     const response = await session.fetch(req('/callback?code=example'));
     assert.equal(response.status, 502);
-    assert.deepEqual(await response.json(), {error: 'Callback failed'});
+    assert.match(response.headers.get('Content-Type') ?? '', /text\/html/);
+    assert.match(await response.text(), /could not be completed/);
   } finally { globalThis.fetch = oldFetch; }
 });
 
@@ -81,7 +82,7 @@ test('a non-JSON authorization response answers 502 instead of throwing', async 
   try {
     const response = await session.fetch(req('/callback?code=example'));
     assert.equal(response.status, 502);
-    assert.deepEqual(await response.json(), {error: 'Authorization response was not JSON'});
+    assert.match(await response.text(), /Unexpected response from Vercel/);
   } finally { globalThis.fetch = oldFetch; }
 });
 
@@ -93,7 +94,70 @@ test('a redirect from Vercel is refused instead of followed', async () => {
   try {
     const response = await session.fetch(req('/callback?code=example'));
     assert.equal(response.status, 502);
-    assert.deepEqual(await response.json(), {error: 'Authorization failed'});
+    assert.match(await response.text(), /Vercel rejected the connection/);
+  } finally { globalThis.fetch = oldFetch; }
+});
+
+test('disconnect revokes the Vercel token with client credentials', async () => {
+  let revoked = null;
+  const { session } = setup();
+  await session.fetch(req('/start', {method:'POST', headers:{'X-Pairing-Challenge':challenge}}));
+  const oldFetch = globalThis.fetch;
+  globalThis.fetch = async (input, options) => {
+    const url = new URL(input);
+    if (url.pathname === '/v2/oauth/access_token') return Response.json({access_token:'private-token', team_id:'team_123'});
+    if (url.pathname === '/login/oauth/token/revoke') {
+      revoked = { auth: options.headers.Authorization, token: new URLSearchParams(options.body).get('token') };
+      return new Response(null, {status: 200});
+    }
+    throw new Error('unexpected request: ' + url.pathname);
+  };
+  try {
+    assert.equal((await session.fetch(req('/callback?code=example'))).status, 200);
+    await session.fetch(req('/status', {headers:{Authorization:'Bearer ' + secret}}));
+    assert.equal((await session.fetch(req('/disconnect', {method:'POST', headers:{Authorization:'Bearer ' + secret}}))).status, 200);
+    assert.equal(revoked.token, 'private-token');
+    assert.match(revoked.auth, /^Basic /);
+    assert.equal((await session.fetch(req('/status', {headers:{Authorization:'Bearer ' + secret}}))).status, 401);
+  } finally { globalThis.fetch = oldFetch; }
+});
+
+test('the callback renders a human page, including for an expired session', async () => {
+  const { session } = setup();
+  await session.fetch(req('/start', {method:'POST', headers:{'X-Pairing-Challenge':challenge}}));
+  const oldFetch = globalThis.fetch;
+  globalThis.fetch = async () => Response.json({access_token:'private-token', team_id:'team_123'});
+  try {
+    const success = await session.fetch(req('/callback?code=example'));
+    assert.equal(success.status, 200);
+    assert.match(success.headers.get('Content-Type') ?? '', /text\/html/);
+    assert.match(success.headers.get('Content-Security-Policy') ?? '', /style-src 'unsafe-inline'/);
+    const html = await success.text();
+    assert.match(html, /Agent Notch is connected/);
+    assert.match(html, /close this tab/);
+    assert.doesNotMatch(html, /private-token/);
+
+    const replay = await session.fetch(req('/callback?code=example'));
+    assert.equal(replay.status, 400);
+    assert.match(await replay.text(), /This connection expired/);
+  } finally { globalThis.fetch = oldFetch; }
+});
+
+test('disconnect still succeeds when revocation throws', async () => {
+  const { session } = setup();
+  await session.fetch(req('/start', {method:'POST', headers:{'X-Pairing-Challenge':challenge}}));
+  const oldFetch = globalThis.fetch;
+  globalThis.fetch = async input => {
+    const path = new URL(input).pathname;
+    if (path === '/v2/oauth/access_token') return Response.json({access_token:'private-token', team_id:'team_123'});
+    if (path === '/login/oauth/token/revoke') throw new TypeError('network down');
+    throw new Error('unexpected request: ' + path);
+  };
+  try {
+    assert.equal((await session.fetch(req('/callback?code=example'))).status, 200);
+    await session.fetch(req('/status', {headers:{Authorization:'Bearer ' + secret}}));
+    assert.equal((await session.fetch(req('/disconnect', {method:'POST', headers:{Authorization:'Bearer ' + secret}}))).status, 200);
+    assert.equal((await session.fetch(req('/status', {headers:{Authorization:'Bearer ' + secret}}))).status, 401);
   } finally { globalThis.fetch = oldFetch; }
 });
 
@@ -165,7 +229,9 @@ test('simulated installation stays isolated across devices and does not leak met
   globalThis.fetch = async (input, options) => {
     // Workers rejects "error"; manual is the only way to refuse redirects at the edge.
     assert.equal(options.redirect, 'manual');
-    if (new URL(input).pathname === '/v2/oauth/access_token') return Response.json({access_token:'server-secret',team_id:'team_123'});
+    const path = new URL(input).pathname;
+    if (path === '/v2/oauth/access_token') return Response.json({access_token:'server-secret',team_id:'team_123'});
+    if (path === '/login/oauth/token/revoke') return new Response(null, {status: 200});
     assert.equal(options.headers.Authorization, 'Bearer server-secret');
     return Response.json({deployments:[{uid:'dpl_1',name:'demo',state:'BUILDING',meta:{githubRepo:'repo',privateField:'sensitive'},secret:'sensitive'}],pagination:{next:null}});
   };
