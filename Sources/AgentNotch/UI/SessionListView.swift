@@ -85,8 +85,16 @@ struct SessionListView: View {
                         VStack(alignment: .leading, spacing: 4) {
                             Text("VERCEL").font(.system(size: 10, weight: .semibold))
                             ForEach(deployments) { deployment in
-                                Text(([deployment.project, deployment.status.label] + [deployment.repository, deployment.commit.map { String($0.prefix(7)) }, deployment.author].compactMap { $0 }).joined(separator: " · "))
-                                    .font(.system(size: 10)).lineLimit(1)
+                                HStack(spacing: 5) {
+                                    Text(([deployment.project, deployment.status.label] + [deployment.repository, deployment.commit.map { String($0.prefix(7)) }, deployment.author].compactMap { $0 }).joined(separator: " · "))
+                                        .font(.system(size: 10)).lineLimit(1)
+                                    if deployment.status == .building || deployment.status == .pending {
+                                        DeploymentProgress(color: deployment.status == .building ? Color(hex: 0x72DCD0) : Color(hex: 0xF4C377),
+                                                           reduceMotion: reduceMotion)
+                                            .frame(width: 40, height: 2)
+                                            .accessibilityHidden(true)
+                                    }
+                                }
                             }
                         }
                     }

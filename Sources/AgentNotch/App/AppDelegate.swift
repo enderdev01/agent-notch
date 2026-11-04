@@ -4,7 +4,11 @@ import AppKit
 final class AppDelegate: NSObject, NSApplicationDelegate {
     private let store = SessionStore()
     private let viewModel = NotchViewModel()
-    private let vercel = VercelMonitor(notificationsEnabled: { Preferences.vercelNotificationsEnabled })
+    /// Notifications belong to the app layer: quiet unless the user asked for them and the notch is already open.
+    private lazy var vercel = VercelMonitor(shouldNotify: { [weak self] _ in
+        guard let self else { return false }
+        return Preferences.vercelNotificationsEnabled && !viewModel.hovering && store.approvals.isEmpty
+    })
     private var server: HookServer?
     private var panelController: NotchPanelController?
     private var statusMenu: StatusMenu?

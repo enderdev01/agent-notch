@@ -22,11 +22,11 @@ final class VercelMonitor: ObservableObject {
     private let worker: URL?
     private let slug: String
     private let session = URLSession(configuration: .ephemeral, delegate: NoRedirects(), delegateQueue: nil)
-    /// Whether a finished deployment may post a notification. Injected by the app layer: this monitor reads no preferences.
-    private let notificationsEnabled: () -> Bool
+    /// Whether this finished deployment may post a notification. Injected by the app layer: the monitor reads no preferences and knows nothing about the notch.
+    private let shouldNotify: (Deployment) -> Bool
 
-    init(notificationsEnabled: @escaping () -> Bool = { false }) {
-        self.notificationsEnabled = notificationsEnabled
+    init(shouldNotify: @escaping (Deployment) -> Bool = { _ in false }) {
+        self.shouldNotify = shouldNotify
         if let raw = Bundle.main.object(forInfoDictionaryKey: "VercelWorkerURL") as? String,
            let url = URL(string: raw), url.scheme == "https", url.host != nil { worker = url }
         else { worker = nil }
@@ -79,13 +79,12 @@ final class VercelMonitor: ObservableObject {
                 _ = try await request("disconnect", credentials: credentials, method: "POST")
                 deleteCredentials()
                 connected = false; deployments = []; tracker = DeploymentTracker(); error = nil
-                UserDefaults.standard.removeObject(forKey: "vercelTracker")
             } catch { self.error = error.localizedDescription }
         }
     }
 
     private func poll(_ credentials: Credentials) async {
-        if let data = UserDefaults.standard.data(forKey: "vercelTracker"), let saved = try? JSONDecoder().decode(DeploymentTracker.self, from: data) { tracker = saved }
+        // The tracker starts empty on every run: a deployment that finished while the app was closed must not be announced.
         while !Task.isCancelled {
             do {
                 let status = try JSONDecoder().decode(ConnectionStatus.self, from: try await request("status", credentials: credentials))
@@ -104,7 +103,6 @@ final class VercelMonitor: ObservableObject {
                     deployments = items
                     let completed = tracker.update(items)
                     for deployment in completed { await notify(deployment) }
-                    if let data = try? JSONEncoder().encode(tracker) { UserDefaults.standard.set(data, forKey: "vercelTracker") }
                 }
                 error = nil
             } catch MonitorError.expired {
@@ -117,7 +115,7 @@ final class VercelMonitor: ObservableObject {
 
     private func notify(_ deployment: Deployment) async {
         guard Bundle.main.bundleURL.pathExtension == "app" else { return }
-        guard notificationsEnabled() else { return }
+        guard shouldNotify(deployment) else { return }
         let center = UNUserNotificationCenter.current()
         guard (try? await center.requestAuthorization(options: [.alert])) == true else { return }
         let content = UNMutableNotificationContent()
