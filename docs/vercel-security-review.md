@@ -22,7 +22,7 @@ cleared findings.
 
 | # | Severity | Finding | Status |
 |---|----------|---------|--------|
-| F1 | Medium | **Disconnect deletes the local session but does not revoke the Vercel token.** Access remains until the user removes the integration in Vercel; the confirmation dialog says so, but a user who disconnects and forgets leaves a live token. | Open: needs a revocation endpoint decision. Add a `POST https://api.vercel.com/v2/oauth/revoke` call only after verifying Vercel documents it; otherwise keep the current copy and make it louder. |
+| F1 | Medium | **Disconnect deletes the local session but does not revoke the Vercel token.** Access remains until the user removes the integration in Vercel; the confirmation dialog says so, but a user who disconnects and forgets leaves a live token. | Open: `POST https://api.vercel.com/v2/oauth/revoke` answers `415` instead of `404` to an empty request, so the endpoint likely exists, but its contract is not in the pages reviewed. Confirm the parameters before calling it; until then keep the current copy and make it louder. |
 | F2 | Medium | **An expired Vercel token was reported as a generic failure.** A `401` from Vercel became `502` to the client, so the app showed "Could not connect to Vercel" forever instead of asking to reconnect. | Fixed: Vercel `401` now maps to `401`, which the client already treats as expired and clears. |
 | F3 | Low | The callback response carried no `X-Content-Type-Options`. | Fixed: `nosniff` added. |
 | F4 | Low | **The callback is bound to Vercel only by the `code` and the secrecy of `state`.** Someone who learns a live `state` (it travels in the Vercel redirect URL, so it can appear in logs) could attach their own authorization to that session; they still cannot read deployments or disconnect, which require `verifier`. | Accepted: standard OAuth-with-state trade-off. Shorten the 10-minute window if that ever matters. |
@@ -32,6 +32,8 @@ cleared findings.
 | F8 | Info | Token retention: a claimed session keeps the token until `/disconnect`; an unclaimed one is deleted by the alarm at 10 minutes. Cloudflare encrypts Durable Object storage at rest. | Documented. There is no periodic rotation; reconnecting is the rotation. |
 | F9 | Info | The verifier never leaves the device, and the token never reaches it. A stolen `state` alone is not enough to read deployments. | Design property; keep it. |
 | F10 | Info | The Worker returns only `uid`, `name`, `state` and git metadata for production deployments of the stored team. No project list, env vars or logs. | Design property; keep it. |
+| F11 | Medium | **Personal-account installations failed.** Vercel answers the token exchange with `team_id: null` when the integration is installed on a personal account, and the Worker demanded a string, so the callback returned `502` after a successful authorization. | Fixed: a null or absent team is stored as empty and `teamId` is omitted from Vercel requests. Covered by a test. |
+| F12 | Low | The Worker called `https://api.vercel.com/v7/deployments`, which is not the endpoint in Vercel's current reference. | Fixed: uses the documented `/v6/deployments`. |
 
 ## Residual risk before a public release
 

@@ -43,8 +43,9 @@ export class Session {
         });
         if (!response.ok) return json({ error: 'Authorization failed' }, 502);
         const result = await response.json();
-        if (typeof result.access_token !== 'string' || !result.access_token || typeof result.team_id !== 'string') return json({ error: 'Invalid authorization response' }, 502);
-        await storage.put({ token: result.access_token, team: result.team_id });
+        // A personal account installs with team_id null; only a team install has an id to scope requests with.
+        if (typeof result.access_token !== 'string' || !result.access_token) return json({ error: 'Invalid authorization response' }, 502);
+        await storage.put({ token: result.access_token, team: typeof result.team_id === 'string' ? result.team_id : '' });
         return new Response('Connected. Return to Agent Notch.', { headers: { 'Content-Type': 'text/plain; charset=utf-8', 'Cache-Control': 'no-store', 'Referrer-Policy': 'no-referrer', 'X-Content-Type-Options': 'nosniff', 'Content-Security-Policy': "default-src 'none'" } });
       });
     }
@@ -60,8 +61,9 @@ export class Session {
       return json({ status: 'connected' });
     }
     if (url.pathname === '/deployments' && request.method === 'GET') {
-      const endpoint = new URL('https://api.vercel.com/v7/deployments');
-      endpoint.searchParams.set('teamId', await storage.get('team'));
+      const endpoint = new URL('https://api.vercel.com/v6/deployments');
+      const team = await storage.get('team');
+      if (typeof team === 'string' && team) endpoint.searchParams.set('teamId', team);
       endpoint.searchParams.set('target', 'production');
       endpoint.searchParams.set('limit', '100');
       const until = url.searchParams.get('until');

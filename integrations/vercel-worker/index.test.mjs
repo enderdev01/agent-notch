@@ -43,6 +43,24 @@ test('expired pairing deletes an unclaimed authorization', async () => {
   assert.equal(values.size, 0);
 });
 
+test('a personal account installs with team_id null and calls Vercel without teamId', async () => {
+  const { session } = setup();
+  await session.fetch(req('/start', {method:'POST', headers:{'X-Pairing-Challenge':challenge}}));
+  const oldFetch = globalThis.fetch;
+  globalThis.fetch = async input => {
+    const url = new URL(input);
+    if (url.pathname === '/v2/oauth/access_token') return Response.json({access_token:'private-token', team_id: null});
+    assert.equal(url.pathname, '/v6/deployments');
+    assert.equal(url.searchParams.get('teamId'), null);
+    return Response.json({deployments: [], pagination: {next: null}});
+  };
+  try {
+    assert.equal((await session.fetch(req('/callback?code=example'))).status, 200);
+    await session.fetch(req('/status', {headers:{Authorization:'Bearer ' + secret}}));
+    assert.equal((await session.fetch(req('/deployments', {headers:{Authorization:'Bearer ' + secret}}))).status, 200);
+  } finally { globalThis.fetch = oldFetch; }
+});
+
 test('deployments proxy scopes Vercel requests and never returns its token', async () => {
   const { session } = setup();
   await session.fetch(req('/start', {method:'POST', headers:{'X-Pairing-Challenge':challenge}}));
