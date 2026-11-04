@@ -23,14 +23,27 @@ Worker is deployed first so its URL can be used as the redirect URL.
 
 ## 1. Deploy the Worker (no secrets yet)
 
+Run from the repository root. If `cd` fails, you are in the wrong directory: `wrangler deploy`
+without a `wrangler.toml` looks for a Pages project and fails with "Could not detect a directory
+containing static files", deploying nothing.
+
 ```bash
 cd integrations/vercel-worker
 npx wrangler login
+npx wrangler whoami          # confirms the login
 npx wrangler deploy
 ```
 
 `wrangler deploy` prints the URL, normally
-`https://agent-notch-vercel.<your-subdomain>.workers.dev`. Use that (or a custom domain) as the
+`https://agent-notch-vercel.<your-subdomain>.workers.dev`. Smoke-test it with any 64-hex state; a
+`401` means the Worker and its Durable Object are up and the session is unauthenticated:
+
+```bash
+curl -s -o /dev/null -w '%{http_code}\n' \
+  "https://<worker-host>/status?state=$(openssl rand -hex 32)"   # expect 401
+```
+
+Use that URL (or a custom domain) as the
 callback host everywhere below. The Worker deploys fine without secrets because they are only read
 at request time; `wrangler secret put` would also refuse to run before the Worker exists.
 
