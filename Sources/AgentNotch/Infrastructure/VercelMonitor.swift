@@ -15,6 +15,8 @@ final class VercelMonitor: ObservableObject {
     @Published private(set) var deployments: [Deployment] = []
     @Published private(set) var error: String?
     @Published private(set) var connected = false
+    /// Non-secret mirror of "there is a credential in the Keychain", so the menu never reads the Keychain and macOS never asks for a password just because the menu opened.
+    @Published private(set) var paired = false
     private var task: Task<Void, Never>?
     private var tracker = DeploymentTracker()
     private var simulationTracker = DeploymentTracker()
@@ -27,6 +29,7 @@ final class VercelMonitor: ObservableObject {
 
     init(shouldNotify: @escaping (Deployment) -> Bool = { _ in false }) {
         self.shouldNotify = shouldNotify
+        paired = UserDefaults.standard.bool(forKey: "vercelPaired")
         if let raw = Bundle.main.object(forInfoDictionaryKey: "VercelWorkerURL") as? String,
            let url = URL(string: raw), url.scheme == "https", url.host != nil { worker = url }
         else { worker = nil }
@@ -34,7 +37,7 @@ final class VercelMonitor: ObservableObject {
     }
 
     var configured: Bool { worker != nil }
-    var hasCredentials: Bool { load() != nil }
+    var hasCredentials: Bool { paired }
     var active: Bool { connected && deployments.contains { $0.status == .pending || $0.status == .building } }
 
     func simulate(_ status: Deployment.Status) {
@@ -45,15 +48,23 @@ final class VercelMonitor: ObservableObject {
         for finished in simulationTracker.update([item]) { Task { await notify(finished) } }
     }
 
+    /// One-time migration: before the `paired` flag existed, the only record of a connection was the Keychain item.
+    /// Called when the app is active so the prompt, if macOS shows one, has a focused window.
+    func adoptExistingIfNeeded() {
+        guard UserDefaults.standard.object(forKey: "vercelPaired") == nil else { return }
+        markPaired(load() != nil)
+    }
+
     func start() {
-        guard let credentials = load() else { return }
-        task?.cancel()
+        // Reading the Keychain can raise a system password prompt; only do it once, and only when we know there is an item.
+        guard task == nil, paired else { return }
+        guard let credentials = load() else { markPaired(false); return }
         task = Task { await poll(credentials) }
     }
 
     func connect() {
         guard configured else { error = "Vercel integration is not configured."; return }
-        guard !hasCredentials else { start(); return }
+        guard !paired else { start(); return }
         task?.cancel()
         task = Task {
             do {
@@ -73,7 +84,9 @@ final class VercelMonitor: ObservableObject {
 
     func disconnect() {
         task?.cancel()
-        guard let credentials = load() else { return }
+        // The user asked for this, so bring the app forward: the Keychain prompt is unusable while the app is not active.
+        NSApp.activate(ignoringOtherApps: true)
+        guard let credentials = load() else { paired = false; return }
         task = Task {
             do {
                 _ = try await request("disconnect", credentials: credentials, method: "POST")
@@ -163,6 +176,7 @@ final class VercelMonitor: ObservableObject {
             var item = query; item[kSecValueData as String] = data; item[kSecAttrAccessible as String] = kSecAttrAccessibleAfterFirstUnlockThisDeviceOnly
             guard SecItemAdd(item as CFDictionary, nil) == errSecSuccess else { throw MonitorError.keychain }
         } else if status != errSecSuccess { throw MonitorError.keychain }
+        markPaired(true)
     }
     private func load() -> Credentials? {
         var item = query; item[kSecReturnData as String] = true
@@ -170,7 +184,15 @@ final class VercelMonitor: ObservableObject {
         guard SecItemCopyMatching(item as CFDictionary, &result) == errSecSuccess, let data = result as? Data else { return nil }
         return try? JSONDecoder().decode(Credentials.self, from: data)
     }
-    private func deleteCredentials() { SecItemDelete(query as CFDictionary) }
+    private func deleteCredentials() {
+        SecItemDelete(query as CFDictionary)
+        markPaired(false)
+    }
+    /// Keeps the menu honest without touching the Keychain: the flag is not a secret and never prompts.
+    private func markPaired(_ value: Bool) {
+        paired = value
+        UserDefaults.standard.set(value, forKey: "vercelPaired")
+    }
 }
 
 struct DeploymentPage: Decodable {

@@ -12,6 +12,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private var server: HookServer?
     private var panelController: NotchPanelController?
     private var statusMenu: StatusMenu?
+    private let debug = ProcessInfo.processInfo.environment["AGENT_NOTCH_DEBUG"] == "1"
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         store.onSessionFinished = { Sounds.finished($0.agent) }
@@ -22,7 +23,6 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             MainActor.assumeIsolated { store.askRetention = Preferences.yourTurnFor }
         }
 
-        let debug = ProcessInfo.processInfo.environment["AGENT_NOTCH_DEBUG"] == "1"
         let server = HookServer(store: store, vercel: vercel, debug: debug)
         do {
             try server.start()
@@ -34,9 +34,15 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         statusMenu = StatusMenu(store: store, vercel: vercel)
         panelController = NotchPanelController(store: store, viewModel: viewModel, vercel: vercel)
         panelController?.show()
-        if !debug { vercel.start() }
         // After launch finishes, so the notch is already on screen behind the dialog.
         DispatchQueue.main.async { ConnectAgents.promptIfNeeded() }
+    }
+
+    /// Polling starts once the app is actually active, so a Keychain prompt has a focused window the user can type into.
+    func applicationDidBecomeActive(_ notification: Notification) {
+        guard !debug else { return }
+        vercel.adoptExistingIfNeeded()
+        vercel.start()
     }
 
     func applicationWillTerminate(_ notification: Notification) {

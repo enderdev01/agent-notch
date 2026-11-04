@@ -220,7 +220,7 @@ struct NotchRootView: View {
                     }
                     .id(request.id)
                 } else {
-                    SessionListView(sessions: Array(store.sessions.values), deployments: vercel.deployments, reduceMotion: viewModel.reduceMotion,
+                    SessionListView(sessions: Array(store.sessions.values), reduceMotion: viewModel.reduceMotion,
                                     stats: store.todayStats, hovered: $viewModel.hoveredSession,
                                     contentHeight: $viewModel.listContentHeight)
                 }
