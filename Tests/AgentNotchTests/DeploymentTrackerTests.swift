@@ -14,13 +14,13 @@ final class DeploymentTrackerTests: XCTestCase {
         XCTAssertEqual(tracker.update([deployment("new", .failed)]).map(\.id), ["new"])
     }
 
-    func testRestartAndStalePollDoNotRepeatNotifications() throws {
+    /// A new run starts with an empty tracker, so work that finished while the app was closed is never announced.
+    func testFinishedWhileClosedIsNotAnnounced() {
         var tracker = DeploymentTracker()
-        _ = tracker.update([deployment("deploy", .building)])
-        XCTAssertEqual(tracker.update([deployment("deploy", .ready)]).count, 1)
-        tracker = try JSONDecoder().decode(DeploymentTracker.self, from: JSONEncoder().encode(tracker))
-        XCTAssertTrue(tracker.update([deployment("deploy", .building)]).isEmpty)
-        XCTAssertTrue(tracker.update([deployment("deploy", .ready)]).isEmpty)
+        XCTAssertTrue(tracker.update([deployment("closed", .ready)]).isEmpty)
+        XCTAssertTrue(tracker.update([deployment("closed", .ready), deployment("live", .building)]).isEmpty)
+        XCTAssertEqual(tracker.update([deployment("closed", .ready), deployment("live", .ready)]).map(\.id), ["live"])
+        XCTAssertTrue(tracker.update([deployment("closed", .ready), deployment("live", .ready)]).isEmpty)
     }
 
     func testDuplicateItemsNotifyOnlyOnce() {

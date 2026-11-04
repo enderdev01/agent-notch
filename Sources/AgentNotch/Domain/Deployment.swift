@@ -25,8 +25,8 @@ struct Deployment: Equatable, Identifiable {
     let status: Status
 }
 
-/// Tracks terminal transitions without notifying for history loaded on the first successful poll.
-struct DeploymentTracker: Codable {
+/// Tracks terminal transitions for one run: the first poll is a baseline, so history and work that finished while the app was closed stay silent.
+struct DeploymentTracker {
     private var statuses: [String: Deployment.Status] = [:]
     private var initialized = false
 
