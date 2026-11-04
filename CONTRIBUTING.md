@@ -25,7 +25,7 @@ make run        # run the binary
 - UI strings go through `L("English text")`. Add the Spanish and German translations in `packaging/locales/<lang>.lproj/`
   and run `python3 scripts/check-strings.py` (CI runs it too).
 - Keep the layers as they are: `Domain` knows nothing about UI or networking, `Infrastructure` talks to the system.
-- The server must stay loopback-only and the app must not make network requests.
+- The server must stay loopback-only. The app makes no network requests except the optional Vercel connection, which must stay off by default, hidden until configured, started only by an explicit user action, and documented in the README of every language.
 - Use [conventional commits](https://www.conventionalcommits.org/) (`feat:`, `fix:`, `docs:`, `chore:`).
 - Do not commit secrets, certificates, or personal paths. Never include a notarization password or profile.
 

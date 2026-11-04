@@ -24,7 +24,7 @@
 
 Agent Notch turns the MacBook notch into a live dashboard for your AI coding agents. See what each agent is doing, follow its task list step by step, and **Allow / Deny** permission requests without leaving what you are working on. When an agent finishes, you see its answer; when it needs you, the notch says so.
 
-It runs locally, listens only on `127.0.0.1`, and never sends anything anywhere.
+It runs locally and listens only on `127.0.0.1`. It never sends your agent activity anywhere: the only outbound request the app can make is the optional Vercel connection below, and only after you start it yourself.
 
 ## What you get
 
@@ -123,6 +123,14 @@ While it works, Gentle Shell also shows the phase it reports with `gentle_odd_ph
 | <img src="Sources/AgentNotch/Resources/Mascots/gentle-work-close.png" alt="Closing" width="56"> | Closing | Wrapping up the turn. |
 
 </details>
+
+### Vercel deployments (optional)
+
+Agent Notch can show production deployments from the Vercel projects your integration can see. It is off until you choose **Connect Vercel…**: before that the menu item is hidden and the app makes no network requests.
+
+When you connect, the app keeps a device credential in the Keychain and talks only to the Agent Notch Worker. The Worker holds the integration's client secret and exchanges it for a Vercel token scoped to reading deployments; that token never reaches your Mac. The app asks for deployment read access only and sends no prompts, code, session data or file paths.
+
+**Disconnect** removes the local credential. To revoke the integration's access as well, remove it in Vercel; the dialog says so. Deployment notifications are off by default and, when enabled, arrive silently.
 
 ## Works with
 
