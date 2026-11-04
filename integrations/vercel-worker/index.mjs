@@ -45,7 +45,7 @@ export class Session {
         const result = await response.json();
         if (typeof result.access_token !== 'string' || !result.access_token || typeof result.team_id !== 'string') return json({ error: 'Invalid authorization response' }, 502);
         await storage.put({ token: result.access_token, team: result.team_id });
-        return new Response('Connected. Return to Agent Notch.', { headers: { 'Content-Type': 'text/plain; charset=utf-8', 'Cache-Control': 'no-store', 'Referrer-Policy': 'no-referrer', 'Content-Security-Policy': "default-src 'none'" } });
+        return new Response('Connected. Return to Agent Notch.', { headers: { 'Content-Type': 'text/plain; charset=utf-8', 'Cache-Control': 'no-store', 'Referrer-Policy': 'no-referrer', 'X-Content-Type-Options': 'nosniff', 'Content-Security-Policy': "default-src 'none'" } });
       });
     }
     const verifier = request.headers.get('Authorization')?.replace(/^Bearer /, '') ?? '';
@@ -67,6 +67,8 @@ export class Session {
       const until = url.searchParams.get('until');
       if (until && /^\d{1,16}$/.test(until)) endpoint.searchParams.set('until', until);
       const result = await fetch(endpoint, { redirect: 'error', headers: { Authorization: `Bearer ${token}` } });
+      // An expired or revoked token must ask the app to reconnect, not look like a network failure.
+      if (result.status === 401) return json({ error: 'Expired' }, 401);
       if (!result.ok) return json({ error: 'Vercel request failed' }, result.status === 429 ? 429 : 502);
       const page = await result.json();
       if (!Array.isArray(page.deployments)) return json({ error: 'Invalid Vercel response' }, 502);

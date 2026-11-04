@@ -65,6 +65,25 @@ test('deployments proxy scopes Vercel requests and never returns its token', asy
 });
 
 
+test('an expired Vercel token asks the client to reconnect and the callback is hardened', async () => {
+  const { session } = setup();
+  await session.fetch(req('/start', {method:'POST', headers:{'X-Pairing-Challenge':challenge}}));
+  const oldFetch = globalThis.fetch;
+  globalThis.fetch = async input => {
+    const url = new URL(input);
+    if (url.pathname === '/v2/oauth/access_token') return Response.json({access_token:'private-token', team_id:'team_123'});
+    return new Response('unauthorized', {status: 401});
+  };
+  try {
+    const callback = await session.fetch(req('/callback?code=example'));
+    assert.equal(callback.headers.get('X-Content-Type-Options'), 'nosniff');
+    await session.fetch(req('/status', {headers:{Authorization:'Bearer ' + secret}}));
+    const response = await session.fetch(req('/deployments', {headers:{Authorization:'Bearer ' + secret}}));
+    assert.equal(response.status, 401);
+    assert.deepEqual(await response.json(), {error: 'Expired'});
+  } finally { globalThis.fetch = oldFetch; }
+});
+
 test('router rejects invalid state and rate-limited clients', async () => {
   assert.equal((await worker.fetch(req('/status?state=no'), {})).status, 400);
   const env = { RATE_LIMITER: { limit: async () => ({ success: false }) } };
