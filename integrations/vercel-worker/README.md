@@ -7,34 +7,66 @@ independent pass and the flow has run end to end.
 Run the isolated tests with `node --test integrations/vercel-worker/index.test.mjs`. The tests use
 mocked Vercel responses and no credentials.
 
-## What only the owner can do
+## Where the credentials come from
 
-The code side is ready; these steps need accounts, secrets and accepting Vercel's terms.
+There are three values, and only two are secrets:
 
-### 1. Deploy the Worker
+| Value | Where it comes from |
+|-------|---------------------|
+| `VERCEL_CLIENT_ID` | Vercel assigns it when you create the integration (bottom of its settings page) |
+| `VERCEL_CLIENT_SECRET` | Same page; rotatable with **Rotate Secret** |
+| `VERCEL_REDIRECT_URI` | Not a credential: the callback URL you type in the integration form, exactly |
+
+None of them live in a `.env` you generate. Vercel creates a client ID and secret per integration,
+so the integration has to exist before the Worker can hold them. That forces the order below: the
+Worker is deployed first so its URL can be used as the redirect URL.
+
+## 1. Deploy the Worker (no secrets yet)
 
 ```bash
 cd integrations/vercel-worker
-wrangler secret put VERCEL_CLIENT_ID
-wrangler secret put VERCEL_CLIENT_SECRET      # never a var, never a committed file
-wrangler secret put VERCEL_REDIRECT_URI       # https://<worker-host>/callback
-wrangler deploy
+npx wrangler login
+npx wrangler deploy
 ```
 
-The Durable Object namespace, its migration and the rate limit are already declared in
-`wrangler.toml`. Rotating the client secret is `wrangler secret put VERCEL_CLIENT_SECRET` again;
-devices keep working because they never see it.
+`wrangler deploy` prints the URL, normally
+`https://agent-notch-vercel.<your-subdomain>.workers.dev`. Use that (or a custom domain) as the
+callback host everywhere below. The Worker deploys fine without secrets because they are only read
+at request time; `wrangler secret put` would also refuse to run before the Worker exists.
 
-### 2. Register the Vercel integration
+The Durable Object namespace, its SQLite migration and the rate limit are declared in
+`wrangler.toml`. Workers Free supports SQLite-backed Durable Objects; if `wrangler deploy` objects
+to the `[[ratelimits]]` binding, that is the one piece that may need a paid plan — remove the binding
+and the check in `index.mjs` to stay on Free.
 
-1. Create an integration with **deployment read** permissions only.
-2. Set its redirect URL to `https://<worker-host>/callback`.
-3. Submit the integration for review if it is going to other people's accounts.
+## 2. Create the Vercel integration (this is where the credentials are born)
 
-The redirect URL must match `VERCEL_REDIRECT_URI` exactly, including the scheme and no trailing
-slash, or the token exchange fails with `502`.
+1. Open the Vercel dashboard, pick your team, then **Integrations → Integrations Console → Create**.
+2. Fill in the required profile fields (name, URL slug, developer, contact emails, logo, category,
+   website, documentation, EULA and privacy URLs, overview).
+3. Set **Redirect URL** to `https://<worker-host>/callback` and keep the API scopes to
+   **deployments read** only.
+4. Save. The **client ID and client secret** are at the bottom of the integration's settings page,
+   under **Credentials**.
+5. The **URL slug** you chose is `VERCEL_INTEGRATION_SLUG`; it is also the install URL
+   `https://vercel.com/integrations/<slug>/new`.
 
-### 3. Build a release that can reach the Worker
+You do not need to submit the integration for review to use it yourself; the review is for listing
+it publicly.
+
+## 3. Store the values as Worker secrets
+
+```bash
+npx wrangler secret put VERCEL_CLIENT_ID
+npx wrangler secret put VERCEL_CLIENT_SECRET
+npx wrangler secret put VERCEL_REDIRECT_URI      # https://<worker-host>/callback
+```
+
+Secrets take effect immediately; no redeploy needed. Never put the secret in `wrangler.toml`, a
+committed file, or a `var`. Rotating the client secret is `wrangler secret put` again with the new
+value from **Rotate Secret**: devices keep working because they never see it.
+
+## 4. Build a release that can reach the Worker
 
 The URL is injected at packaging time, so it is not committed:
 
@@ -44,7 +76,7 @@ VERCEL_WORKER_URL=https://<worker-host> VERCEL_INTEGRATION_SLUG=<slug> scripts/r
 
 Without those variables the app ships with the Vercel UI hidden and makes no Vercel requests.
 
-### 4. Prove it end to end
+## 5. Prove it end to end
 
 - Connect from a build that has the Worker URL, complete the Vercel flow, and confirm the app says
   connected.
