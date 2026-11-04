@@ -3,6 +3,7 @@ import SwiftUI
 
 struct SessionListView: View {
     let sessions: [AgentSession]
+    let deployments: [Deployment]
     let reduceMotion: Bool
     /// Today's totals per agent (nil until the agent finishes a turn).
     let stats: (AgentKind) -> DayStats?
@@ -33,7 +34,7 @@ struct SessionListView: View {
         if contentHeight > 0 { return min(260, contentHeight) }
         // shortcut: first-frame estimate until the content is measured.
         let stepRows = sessions.reduce(0) { $0 + (StepList.rows(for: $1.steps)) }
-        return min(260, CGFloat(groups.count) * 42 + CGFloat(sessions.count) * 54 + CGFloat(stepRows) * 17)
+        return min(260, CGFloat(groups.count) * 42 + CGFloat(sessions.count) * 54 + CGFloat(stepRows) * 17 + (deployments.isEmpty ? 0 : 24 + CGFloat(deployments.count) * 17))
     }
 
     private func mood(for items: [AgentSession]) -> MascotMood {
@@ -59,7 +60,7 @@ struct SessionListView: View {
     }
 
     var body: some View {
-        if sessions.isEmpty {
+        if sessions.isEmpty && deployments.isEmpty {
             VStack(spacing: 6) {
                 Text(L("No active agents"))
                     .font(.system(size: 12))
@@ -80,6 +81,15 @@ struct SessionListView: View {
             VStack(alignment: .leading, spacing: 8) {
             ScrollView(.vertical, showsIndicators: false) {
                 VStack(alignment: .leading, spacing: 10) {
+                    if !deployments.isEmpty {
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text("VERCEL").font(.system(size: 10, weight: .semibold))
+                            ForEach(deployments) { deployment in
+                                Text(([deployment.project, deployment.status.label] + [deployment.repository, deployment.commit.map { String($0.prefix(7)) }, deployment.author].compactMap { $0 }).joined(separator: " · "))
+                                    .font(.system(size: 10)).lineLimit(1)
+                            }
+                        }
+                    }
                     ForEach(groups, id: \.0) { agent, items in
                         VStack(alignment: .leading, spacing: 4) {
                             HStack(spacing: 6) {

@@ -30,49 +30,6 @@ struct StepIcon: View {
     }
 }
 
-/// Horizontal progress for the collapsed notch: one icon per step, the active step's title, and "2/5".
-struct StepStrip: View {
-    let steps: [Step]
-    let color: Color
-    let reduceMotion: Bool
-
-    private static let maxIcons = 10
-
-    private var done: Int { steps.filter { $0.state == .done }.count }
-    private var current: Step? { steps.first { $0.state == .running } ?? steps.first { $0.state == .pending } }
-
-    /// With more steps than fit, slide a window that keeps the active step in view.
-    private var visible: [Step] {
-        guard steps.count > Self.maxIcons else { return steps }
-        let at = steps.firstIndex { $0.state == .running } ?? steps.firstIndex { $0.state == .pending } ?? steps.count - 1
-        let start = min(max(0, at - 3), steps.count - Self.maxIcons)
-        return Array(steps[start..<start + Self.maxIcons])
-    }
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: 4) {
-            HStack(spacing: 5) {
-                ForEach(Array(visible.enumerated()), id: \.offset) { _, step in
-                    StepIcon(state: step.state, color: color, size: 11, reduceMotion: reduceMotion)
-                }
-                Spacer(minLength: 4)
-                Text("\(done)/\(steps.count)")
-                    .font(.system(size: 10, weight: .medium).monospacedDigit())
-                    .foregroundStyle(.white.opacity(0.55))
-            }
-            if let current {
-                Text(current.title)
-                    .font(.system(size: 11))
-                    .foregroundStyle(.white.opacity(0.85))
-                    .lineLimit(1)
-                    .truncationMode(.tail)
-            }
-        }
-        .padding(.horizontal, 12)
-        .padding(.bottom, 9)
-    }
-}
-
 /// Vertical checklist for an expanded session row.
 struct StepList: View {
     static let maxRows = 8

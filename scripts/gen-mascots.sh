@@ -6,6 +6,7 @@
 #   scripts/gen-mascots.sh --sleep-only claude     # one agent
 #   scripts/gen-mascots.sh --poses [agent]         # work / alert / done variants of the base image
 #   scripts/gen-mascots.sh codex                   # base image + sleeping variant (overwrites base)
+#   scripts/gen-mascots.sh --base-only vercel      # generate one base image
 #   APIMART_KEYCHAIN_SERVICE=my-item scripts/gen-mascots.sh ...
 #
 # Output (transparent PNG): Sources/AgentNotch/Resources/mascots-raw/<agent>.png and <agent>-sleep.png
@@ -48,6 +49,7 @@ prompt_for() {
     claude) echo "A small friendly orange creature with two short arms and little legs, warm terracotta color, simple dot eyes. $STYLE" ;;
     codex)  echo "A small friendly purple robot with a screen face showing a terminal prompt >_ and tiny antenna. $STYLE" ;;
     gentle) echo "A small friendly rose character: a blooming rose head in deep magenta-pink petals with bright neon-pink highlights and a calm closed-smile face, a short green stem body, two small dark-green leaves as arms and two leaf feet, a neon pink glow along the outline like a futuristic rose. $STYLE" ;;
+    vercel) echo "A small friendly deployment mascot inspired by a black and white triangular mountain: a rounded charcoal triangular body with a white triangle face, expressive dot eyes, tiny arms and feet, and restrained mint-teal highlights. Clearly readable at tiny size and matching a family of cute pixel-art coding-agent mascots. $STYLE" ;;
     *) echo "unknown agent: $1" >&2; return 1 ;;
   esac
 }
@@ -107,6 +109,7 @@ generate_variant() {
 # Modes: (default) base + sleep | --sleep-only | --poses (work, alert, done) | --idle (blink, drowsy) | --variant <name> [agent] (also work-explore|think|check|close)
 mode=base
 case "${1:-}" in
+  --base-only) mode=base-only; shift ;;
   --sleep-only) mode=sleep; shift ;;
   --poses) mode=poses; shift ;;
   --idle) mode=idle; shift ;;
@@ -118,6 +121,7 @@ agents=("$@")
 for a in "${agents[@]}"; do
   case "$mode" in
     base)  generate_base "$a"; generate_variant "$a" sleep ;;
+    base-only) generate_base "$a" ;;
     sleep) generate_variant "$a" sleep ;;
     poses) for v in work alert done; do generate_variant "$a" "$v"; done ;;
     idle)  for v in blink drowsy; do generate_variant "$a" "$v"; done ;;

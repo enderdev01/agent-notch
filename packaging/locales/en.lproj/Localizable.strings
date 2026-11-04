@@ -77,3 +77,14 @@
 "Click to open folder" = "Click to open folder";
 "Click to open terminal" = "Click to open terminal";
 "+%ld more" = "+%ld more";
+
+"Connect Vercel…" = "Connect Vercel…";
+"Disconnect Vercel" = "Disconnect Vercel";
+"Disconnect Vercel?" = "Disconnect Vercel?";
+"This removes the connection from Agent Notch. To revoke its access, also uninstall the integration in Vercel." = "This removes the connection from Agent Notch. To revoke its access, also uninstall the integration in Vercel.";
+"Disconnect" = "Disconnect";
+"Queued" = "Queued";
+"Building" = "Building";
+"Ready" = "Ready";
+"Canceled" = "Canceled";
+"Unknown" = "Unknown";

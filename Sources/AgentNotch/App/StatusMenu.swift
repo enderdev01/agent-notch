@@ -5,6 +5,7 @@ import ServiceManagement
 @MainActor
 final class StatusMenu: NSObject {
     private let store: SessionStore
+    private let vercel: VercelMonitor
     private let item = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
     private let pauseItem = NSMenuItem(title: L("Pause approvals (always fall back to terminal)"), action: nil, keyEquivalent: "")
     private let soundItem = NSMenuItem(title: L("Play sound when an agent finishes"), action: nil, keyEquivalent: "")
@@ -15,6 +16,8 @@ final class StatusMenu: NSObject {
     private let yourTurnItem = NSMenuItem(title: L("\"Your turn\" mark lasts"), action: nil, keyEquivalent: "")
     private let loginItem = NSMenuItem(title: L("Launch at login"), action: nil, keyEquivalent: "")
     private let languageItem = NSMenuItem(title: L("Language"), action: nil, keyEquivalent: "")
+    private let vercelItem = NSMenuItem(title: L("Connect Vercel…"), action: nil, keyEquivalent: "")
+    private let vercelStatusItem = NSMenuItem(title: "", action: nil, keyEquivalent: "")
 
     private static let volumeChoices: [(title: String, value: Double)] = [(L("Quiet"), 0.15), (L("Normal"), 0.3), (L("Loud"), 0.6)]
     private static let sleepChoices: [(title: String, value: Double)] = [(L("30 seconds"), 30), (L("1 minute"), 60), (L("3 minutes"), 180)]
@@ -26,8 +29,9 @@ final class StatusMenu: NSObject {
         (L("Off"), 0), (L("2 minutes"), 120), (L("5 minutes"), 300), (L("15 minutes"), 900), (L("30 minutes"), 1800),
     ]
 
-    init(store: SessionStore) {
+    init(store: SessionStore, vercel: VercelMonitor) {
         self.store = store
+        self.vercel = vercel
         super.init()
         item.button?.image = NSImage(systemSymbolName: "rectangle.topthird.inset.filled",
                                      accessibilityDescription: "Agent Notch")
@@ -45,7 +49,8 @@ final class StatusMenu: NSObject {
         quit.target = self
         let connect = NSMenuItem(title: L("Connect agents…"), action: #selector(connectAgents), keyEquivalent: "")
         connect.target = self
-        [connect, .separator(), pauseItem, .separator(), soundItem, approvalSoundItem, volumeItem, .separator(), idleItem, sleepItem,
+        vercelItem.target = self; vercelItem.action = #selector(connectVercel)
+        [connect, vercelItem, vercelStatusItem, .separator(), pauseItem, .separator(), soundItem, approvalSoundItem, volumeItem, .separator(), idleItem, sleepItem,
          yourTurnItem, .separator(), languageItem, loginItem, .separator(), quit].forEach(menu.addItem)
         menu.delegate = self
         item.menu = menu
@@ -122,6 +127,20 @@ final class StatusMenu: NSObject {
 
     @objc private func connectAgents() { ConnectAgents.run() }
 
+    @objc private func connectVercel() {
+        if vercel.hasCredentials {
+            let alert = NSAlert()
+            alert.messageText = L("Disconnect Vercel?")
+            alert.informativeText = L("This removes the connection from Agent Notch. To revoke its access, also uninstall the integration in Vercel.")
+            alert.addButton(withTitle: L("Disconnect")); alert.addButton(withTitle: L("Cancel"))
+            guard alert.runModal() == .alertFirstButtonReturn else { return }
+            vercel.disconnect()
+        } else { vercel.connect() }
+        if let error = vercel.error {
+            let alert = NSAlert(); alert.messageText = error; alert.runModal()
+        }
+    }
+
     @objc private func pickLanguage(_ sender: NSMenuItem) {
         let code = sender.representedObject as? String ?? ""
         guard code != (Preferences.languageOverride.map { String($0.prefix(2)) } ?? "") else { return }
@@ -148,6 +167,10 @@ final class StatusMenu: NSObject {
 extension StatusMenu: NSMenuDelegate {
     func menuNeedsUpdate(_ menu: NSMenu) {
         pauseItem.state = store.approvalsPaused ? .on : .off
+        vercelItem.title = vercel.hasCredentials ? L("Disconnect Vercel") : L("Connect Vercel…")
+        vercelItem.isHidden = !vercel.configured
+        vercelStatusItem.isHidden = !vercel.configured || vercel.error == nil
+        vercelStatusItem.title = vercel.error ?? ""
         soundItem.state = Preferences.soundEnabled ? .on : .off
         approvalSoundItem.state = Preferences.approvalSoundEnabled ? .on : .off
         idleItem.state = Preferences.showIdleMascot ? .on : .off

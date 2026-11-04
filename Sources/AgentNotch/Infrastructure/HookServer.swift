@@ -1,5 +1,6 @@
 import Foundation
 import Network
+import UserNotifications
 
 /// Loopback-only HTTP server receiving agent hook events and approval requests.
 final class HookServer: @unchecked Sendable {
@@ -8,11 +9,13 @@ final class HookServer: @unchecked Sendable {
     private let port: UInt16
     private let debug: Bool
     private let store: SessionStore
+    private let vercel: VercelMonitor
     private let queue = DispatchQueue(label: "dev.onilabs.agentnotch.server")
     private var listener: NWListener?
 
-    init(store: SessionStore, port: UInt16? = nil, debug: Bool = false) {
+    init(store: SessionStore, vercel: VercelMonitor, port: UInt16? = nil, debug: Bool = false) {
         self.store = store
+        self.vercel = vercel
         self.debug = debug
         let env = ProcessInfo.processInfo.environment["AGENT_NOTCH_PORT"].flatMap(UInt16.init)
         self.port = port ?? env ?? Self.defaultPort
@@ -139,7 +142,21 @@ final class HookServer: @unchecked Sendable {
     // MARK: Debug (only when AGENT_NOTCH_DEBUG=1)
 
     private func handleDebug(_ request: HTTPRequest, segments: [String], on conn: HTTPConnection) {
-        if request.method == "POST", segments.count == 3, segments[1] == "resolve-all",
+        if request.method == "GET", segments == ["debug", "vercel", "notifications"] {
+            Task {
+                let settings = await UNUserNotificationCenter.current().notificationSettings()
+                let delivered = await UNUserNotificationCenter.current().deliveredNotifications()
+                let found = delivered.contains { $0.request.identifier == "vercel-simulation" }
+                let denied = settings.authorizationStatus == .denied
+                conn.send(status: 200, body: "{\"denied\":\(denied),\"delivered\":\(found)}")
+            }
+        } else if request.method == "POST", segments.count == 3, segments[1] == "vercel",
+           let status = Deployment.Status(rawValue: segments[2]), [.building, .ready, .failed].contains(status) {
+            Task { @MainActor [vercel] in
+                vercel.simulate(status)
+                conn.send(status: 200, body: "{\"ok\":true}")
+            }
+        } else if request.method == "POST", segments.count == 3, segments[1] == "resolve-all",
            let decision = Decision(rawValue: segments[2]) {
             Task { @MainActor [store] in
                 let count = store.approvals.count

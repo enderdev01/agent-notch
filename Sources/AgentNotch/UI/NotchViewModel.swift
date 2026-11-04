@@ -3,7 +3,9 @@ import SwiftUI
 
 enum NotchLayout {
     /// Panel is big enough for the largest expanded state.
-    static let panelSize = CGSize(width: 480, height: 540)
+    static func panelSize(for geometry: NotchGeometry) -> CGSize {
+        CGSize(width: min(max(480, geometry.notchWidth + 230), max(geometry.screenFrame.width, 1)), height: 540)
+    }
     static let expandedWidth: CGFloat = 420
     static let earWidth: CGFloat = 34
     static let topRadius: CGFloat = 8

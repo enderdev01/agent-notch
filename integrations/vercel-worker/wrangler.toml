@@ -1,0 +1,16 @@
+name = "agent-notch-vercel"
+main = "index.mjs"
+compatibility_date = "2026-11-01"
+
+[[ratelimits]]
+name = "RATE_LIMITER"
+namespace_id = "20261102"
+simple = { limit = 120, period = 60 }
+
+[[durable_objects.bindings]]
+name = "SESSIONS"
+class_name = "Session"
+
+[[migrations]]
+tag = "v1"
+new_sqlite_classes = ["Session"]
