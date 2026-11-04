@@ -8,7 +8,7 @@ Show production deployments from every project available to a Vercel integration
 2. Register a separate Vercel integration with deployment read access. Complete the redirect URL after the Worker has an authorized deployment destination. The owner must review and accept the Vercel agreement.
 3. Add a local connection flow, secure device credentials, production deployment polling with pagination and rate-limit recovery, and visible authentication/network errors. Track installations separately; never mix deployments from different teams.
 4. Present active deployments in the existing compact accent line without increasing the collapsed hit area. Show project, repository, commit, author, and real state on hover; treat missing Git metadata as unavailable. Do not imply a percentage or equate a successful build with production promotion.
-5. Request macOS notification permission and notify once for new terminal transitions, including failures and cancellations. The initial snapshot must not notify historical deployments; preserve deduplication across restarts and handle multiple concurrent deployments.
+5. Request macOS notification permission and notify once for new terminal transitions, including failures and cancellations. The tracker starts empty on every run, so the initial snapshot and any deployment that finished while the app was closed stay silent; only transitions observed while it runs are announced, with multiple concurrent deployments handled.
 
 ## Verification
 

@@ -18,20 +18,22 @@ anything the user is looking at, or take focus away from a browser tab.
 
 ## Rules for the collapsed notch
 
-1. **No layout delta.** The notch width must not change because a deployment exists. Today
-   `rightEarWidth` grows to `max(earWidth, 140)`, which shifts the notch whenever a build
-   starts or finishes. Keep the width derived from agent activity only.
-2. **Agents keep the primary signal.** A deployment must never replace the working/idle
-   indicator of an agent. Deployment presence is a quieter layer: a tint on the accent line,
-   or a small badge inside space the notch already has.
-3. **Worst state wins, with a count.** With several deployments, show the most demanding state
-   (`failed` > `building` > `queued` > `ready`) plus a number ("3"), never a carousel and never
-   a list that grows the collapsed bar.
+1. **No layout delta.** The notch width comes from agent activity only, so starting or finishing
+   a deployment never resizes or shifts it. The deployment badge uses the idle mascot's slot,
+   which costs no extra width.
+2. **Agents keep the primary signal.** A deployment never replaces a working agent's indicator.
+   While everything is idle it may take the idle mascot's slot, which carries no agent status,
+   and it stays otherwise absent from the collapsed notch: a small badge in space the notch
+   already has.
+3. **One quiet signal, no counters.** The collapsed badge says that something is running
+   (`building` over `queued`). Counts, failures and every other state belong to the expanded
+   list; never a carousel and never a list that grows the collapsed bar.
 4. **No percentage, no invented progress.** Keep the indeterminate indicator and keep
    `reduceMotion` respected. A successful build is not a production promotion; say what
    happened, not what it implies.
-5. **Details on hover only.** Project, repository, commit and author belong to the expanded
-   list. The collapsed bar shows at most which project is building.
+5. **Details on hover only.** Project, repository, commit and author live in the expanded list,
+   which is also where the indeterminate indicator sits. The collapsed badge is the mascot plus
+   a state dot.
 
 ## Rules for notifications
 
@@ -42,8 +44,10 @@ anything the user is looking at, or take focus away from a browser tab.
    deployments must not borrow attention for a build the user did not start.
 8. **A switch the user can find.** Add "Notify when a Vercel deployment finishes" next to the
    existing sound items, off unless the user turns it on.
-9. **Do not notify what the user is already watching.** Skip the banner when the notch is
-   expanded on that project, or when the deployment is older than the current session.
+9. **Do not notify what the user is already watching.** The monitor asks an injected policy, and
+   the app only allows a banner while the notch is collapsed and the preference is on. The
+   tracker starts empty on every run, so work that finished while the app was closed is never
+   announced.
 
 ## Open questions
 
