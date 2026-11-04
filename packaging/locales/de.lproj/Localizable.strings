@@ -77,3 +77,14 @@
 "Agent Notch will restart to apply the language. Pending approvals go back to the terminal, and sessions reappear with their next activity." = "Agent Notch wird neu gestartet, um die Sprache zu übernehmen. Ausstehende Freigaben gehen an das Terminal zurück, und Sitzungen erscheinen bei ihrer nächsten Aktivität wieder.";
 "Restart" = "Neu starten";
 "Cancel" = "Abbrechen";
+
+"Connect Vercel…" = "Vercel verbinden…";
+"Disconnect Vercel" = "Vercel trennen";
+"Disconnect Vercel?" = "Vercel trennen?";
+"This removes the connection from Agent Notch. To revoke its access, also uninstall the integration in Vercel." = "Dies entfernt die Verbindung aus Agent Notch. Um den Zugriff zu widerrufen, deinstallieren Sie auch die Integration in Vercel.";
+"Disconnect" = "Trennen";
+"Queued" = "In Warteschlange";
+"Building" = "Wird erstellt";
+"Ready" = "Bereit";
+"Canceled" = "Abgebrochen";
+"Unknown" = "Unbekannt";

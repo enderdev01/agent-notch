@@ -4,6 +4,7 @@ import AppKit
 final class AppDelegate: NSObject, NSApplicationDelegate {
     private let store = SessionStore()
     private let viewModel = NotchViewModel()
+    private let vercel = VercelMonitor()
     private var server: HookServer?
     private var panelController: NotchPanelController?
     private var statusMenu: StatusMenu?
@@ -18,7 +19,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         }
 
         let debug = ProcessInfo.processInfo.environment["AGENT_NOTCH_DEBUG"] == "1"
-        let server = HookServer(store: store, debug: debug)
+        let server = HookServer(store: store, vercel: vercel, debug: debug)
         do {
             try server.start()
         } catch {
@@ -26,9 +27,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         }
         self.server = server
 
-        statusMenu = StatusMenu(store: store)
-        panelController = NotchPanelController(store: store, viewModel: viewModel)
+        statusMenu = StatusMenu(store: store, vercel: vercel)
+        panelController = NotchPanelController(store: store, viewModel: viewModel, vercel: vercel)
         panelController?.show()
+        if !debug { vercel.start() }
         // After launch finishes, so the notch is already on screen behind the dialog.
         DispatchQueue.main.async { ConnectAgents.promptIfNeeded() }
     }

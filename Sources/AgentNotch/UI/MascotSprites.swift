@@ -5,6 +5,7 @@ import AppKit
 @MainActor
 enum MascotSprites {
     private static var cache: [String: NSImage] = [:]
+    static var vercel: NSImage? { load("vercel") }
 
     /// A variant (`<agent>-<variant>.png`: sleep, work, alert, done, work-check...) falls back to its
     /// parent (`work-check` -> `work`), then to the base sprite, when missing.
