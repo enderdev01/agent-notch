@@ -21,6 +21,9 @@ app: build
 	mkdir -p "$(APP)/Contents/Resources/scripts"
 	cp -R bridge integrations "$(APP)/Contents/Resources/"
 	cp scripts/install.sh scripts/uninstall.sh scripts/lib.sh "$(APP)/Contents/Resources/scripts/"
+	# Vercel is off unless the release supplies the Worker URL: nothing is committed, so a dev build stays inert.
+	@if [ -n "$$VERCEL_WORKER_URL" ]; then plutil -replace VercelWorkerURL -string "$$VERCEL_WORKER_URL" "$(APP)/Contents/Info.plist"; fi
+	@if [ -n "$$VERCEL_INTEGRATION_SLUG" ]; then plutil -replace VercelIntegrationSlug -string "$$VERCEL_INTEGRATION_SLUG" "$(APP)/Contents/Info.plist"; fi
 	codesign --force -s - "$(APP)"
 	@echo "Built $(APP)"
 

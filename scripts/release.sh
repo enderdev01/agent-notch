@@ -9,6 +9,9 @@
 #                   xcrun notarytool store-credentials <name> --apple-id <id> --team-id <TEAMID>
 #                   (it prompts for the app-specific password, so it never lands in your shell history).
 #                   Needs DEVELOPER_ID too. Notarizes the DMG and staples the ticket.
+#   VERCEL_WORKER_URL      Vercel integration Worker URL to build into the app (optional).
+#   VERCEL_INTEGRATION_SLUG  Vercel integration slug, defaults to "agent-notch" (optional).
+#                   Without them the Vercel UI stays hidden and the app makes no Vercel requests.
 # Full setup: docs/notarization.md
 set -euo pipefail
 

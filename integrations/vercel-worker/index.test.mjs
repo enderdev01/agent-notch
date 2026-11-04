@@ -43,6 +43,60 @@ test('expired pairing deletes an unclaimed authorization', async () => {
   assert.equal(values.size, 0);
 });
 
+test('a personal account installs with team_id null and calls Vercel without teamId', async () => {
+  const { session } = setup();
+  await session.fetch(req('/start', {method:'POST', headers:{'X-Pairing-Challenge':challenge}}));
+  const oldFetch = globalThis.fetch;
+  globalThis.fetch = async input => {
+    const url = new URL(input);
+    if (url.pathname === '/v2/oauth/access_token') return Response.json({access_token:'private-token', team_id: null});
+    assert.equal(url.pathname, '/v6/deployments');
+    assert.equal(url.searchParams.get('teamId'), null);
+    return Response.json({deployments: [], pagination: {next: null}});
+  };
+  try {
+    assert.equal((await session.fetch(req('/callback?code=example'))).status, 200);
+    await session.fetch(req('/status', {headers:{Authorization:'Bearer ' + secret}}));
+    assert.equal((await session.fetch(req('/deployments', {headers:{Authorization:'Bearer ' + secret}}))).status, 200);
+  } finally { globalThis.fetch = oldFetch; }
+});
+
+test('a failing token exchange answers 502 instead of throwing a 1101', async () => {
+  const { session } = setup();
+  await session.fetch(req('/start', {method:'POST', headers:{'X-Pairing-Challenge':challenge}}));
+  const oldFetch = globalThis.fetch;
+  globalThis.fetch = async () => { throw new TypeError('network down'); };
+  try {
+    const response = await session.fetch(req('/callback?code=example'));
+    assert.equal(response.status, 502);
+    assert.deepEqual(await response.json(), {error: 'Callback failed'});
+  } finally { globalThis.fetch = oldFetch; }
+});
+
+test('a non-JSON authorization response answers 502 instead of throwing', async () => {
+  const { session } = setup();
+  await session.fetch(req('/start', {method:'POST', headers:{'X-Pairing-Challenge':challenge}}));
+  const oldFetch = globalThis.fetch;
+  globalThis.fetch = async () => new Response('<html>nope</html>', {status: 200, headers: {'Content-Type': 'text/html'}});
+  try {
+    const response = await session.fetch(req('/callback?code=example'));
+    assert.equal(response.status, 502);
+    assert.deepEqual(await response.json(), {error: 'Authorization response was not JSON'});
+  } finally { globalThis.fetch = oldFetch; }
+});
+
+test('a redirect from Vercel is refused instead of followed', async () => {
+  const { session } = setup();
+  await session.fetch(req('/start', {method:'POST', headers:{'X-Pairing-Challenge':challenge}}));
+  const oldFetch = globalThis.fetch;
+  globalThis.fetch = async () => new Response(null, {status: 302, headers: {Location: 'https://evil.test/'}});
+  try {
+    const response = await session.fetch(req('/callback?code=example'));
+    assert.equal(response.status, 502);
+    assert.deepEqual(await response.json(), {error: 'Authorization failed'});
+  } finally { globalThis.fetch = oldFetch; }
+});
+
 test('deployments proxy scopes Vercel requests and never returns its token', async () => {
   const { session } = setup();
   await session.fetch(req('/start', {method:'POST', headers:{'X-Pairing-Challenge':challenge}}));
@@ -64,6 +118,25 @@ test('deployments proxy scopes Vercel requests and never returns its token', asy
   } finally { globalThis.fetch = oldFetch; }
 });
 
+
+test('an expired Vercel token asks the client to reconnect and the callback is hardened', async () => {
+  const { session } = setup();
+  await session.fetch(req('/start', {method:'POST', headers:{'X-Pairing-Challenge':challenge}}));
+  const oldFetch = globalThis.fetch;
+  globalThis.fetch = async input => {
+    const url = new URL(input);
+    if (url.pathname === '/v2/oauth/access_token') return Response.json({access_token:'private-token', team_id:'team_123'});
+    return new Response('unauthorized', {status: 401});
+  };
+  try {
+    const callback = await session.fetch(req('/callback?code=example'));
+    assert.equal(callback.headers.get('X-Content-Type-Options'), 'nosniff');
+    await session.fetch(req('/status', {headers:{Authorization:'Bearer ' + secret}}));
+    const response = await session.fetch(req('/deployments', {headers:{Authorization:'Bearer ' + secret}}));
+    assert.equal(response.status, 401);
+    assert.deepEqual(await response.json(), {error: 'Expired'});
+  } finally { globalThis.fetch = oldFetch; }
+});
 
 test('router rejects invalid state and rate-limited clients', async () => {
   assert.equal((await worker.fetch(req('/status?state=no'), {})).status, 400);
@@ -90,7 +163,8 @@ test('simulated installation stays isolated across devices and does not leak met
   }), env);
   const previousFetch = globalThis.fetch;
   globalThis.fetch = async (input, options) => {
-    assert.equal(options.redirect, 'error');
+    // Workers rejects "error"; manual is the only way to refuse redirects at the edge.
+    assert.equal(options.redirect, 'manual');
     if (new URL(input).pathname === '/v2/oauth/access_token') return Response.json({access_token:'server-secret',team_id:'team_123'});
     assert.equal(options.headers.Authorization, 'Bearer server-secret');
     return Response.json({deployments:[{uid:'dpl_1',name:'demo',state:'BUILDING',meta:{githubRepo:'repo',privateField:'sensitive'},secret:'sensitive'}],pagination:{next:null}});
