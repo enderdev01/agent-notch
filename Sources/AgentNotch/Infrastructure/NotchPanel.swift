@@ -31,14 +31,16 @@ final class NotchPanel: NSPanel {
 final class NotchPanelController {
     private let store: SessionStore
     private let viewModel: NotchViewModel
+    private let vercel: VercelMonitor
     private var panel: NotchPanel?
     private var pollTimer: Timer?
     private var collapseTask: Task<Void, Never>?
     private var screenObserver: NSObjectProtocol?
 
-    init(store: SessionStore, viewModel: NotchViewModel) {
+    init(store: SessionStore, viewModel: NotchViewModel, vercel: VercelMonitor) {
         self.store = store
         self.viewModel = viewModel
+        self.vercel = vercel
     }
 
     func show() {
@@ -60,7 +62,7 @@ final class NotchPanelController {
     func reposition() {
         let geometry = NotchGeometry.current()
         viewModel.geometry = geometry
-        let size = NotchLayout.panelSize
+        let size = NotchLayout.panelSize(for: geometry)
         let frame = NSRect(x: geometry.screenFrame.midX - size.width / 2,
                            y: geometry.screenFrame.maxY - size.height,
                            width: size.width, height: size.height)
@@ -68,7 +70,7 @@ final class NotchPanelController {
             panel.setFrame(frame, display: true)
         } else {
             let panel = NotchPanel(frame: frame)
-            let hosting = NSHostingView(rootView: NotchRootView(store: store, viewModel: viewModel))
+            let hosting = NSHostingView(rootView: NotchRootView(store: store, viewModel: viewModel, vercel: vercel))
             hosting.sizingOptions = []
             hosting.frame = NSRect(origin: .zero, size: size)
             hosting.autoresizingMask = [.width, .height]
@@ -77,15 +79,21 @@ final class NotchPanelController {
         }
     }
 
+    static func trackingRect(geometry: NotchGeometry, shape: CGSize, offsetX: CGFloat, expanded: Bool) -> NSRect {
+        let height = expanded ? shape.height + 6 : min(shape.height, geometry.notchHeight)
+        let slack: CGFloat = expanded ? 6 : 0
+        return NSRect(x: geometry.screenFrame.midX + offsetX - shape.width / 2 - slack,
+                      y: geometry.screenFrame.maxY - height,
+                      width: shape.width + 2 * slack, height: height + 20)
+    }
+
     /// Mouse tracking by polling: works while the panel ignores mouse events, needs no permissions.
     private func pollMouse() {
         guard let panel else { return }
         let g = viewModel.geometry
         let shape = viewModel.shapeSize
-        // Visible shape, top-centered, with a little slack (and extra above the screen edge).
-        let rect = NSRect(x: g.screenFrame.midX + viewModel.shapeOffsetX - shape.width / 2 - 6,
-                          y: g.screenFrame.maxY - shape.height - 6,
-                          width: shape.width + 12, height: shape.height + 26)
+        let rect = Self.trackingRect(geometry: g, shape: shape, offsetX: viewModel.shapeOffsetX,
+                                     expanded: viewModel.hovering || !store.approvals.isEmpty)
         let inside = rect.contains(NSEvent.mouseLocation)
         if panel.ignoresMouseEvents == inside { panel.ignoresMouseEvents = !inside }
 

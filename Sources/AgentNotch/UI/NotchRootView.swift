@@ -3,6 +3,7 @@ import SwiftUI
 struct NotchRootView: View {
     @ObservedObject var store: SessionStore
     @ObservedObject var viewModel: NotchViewModel
+    @ObservedObject var vercel: VercelMonitor
 
     private var expanded: Bool { viewModel.hovering || !store.approvals.isEmpty }
     private var activeSessions: [AgentSession] { store.sessions.values.filter { $0.status.isActive } }
@@ -16,18 +17,12 @@ struct NotchRootView: View {
     }
     /// True when nothing is happening: the ear shows one dimmed, breathing mascot instead of going dark.
     private var isIdle: Bool {
-        activeAgents.isEmpty && store.doneFlash == nil && store.approvals.isEmpty && store.peek == nil
+        activeAgents.isEmpty && store.doneFlash == nil && store.approvals.isEmpty && store.peek == nil && !vercel.active
     }
     private var showsIdleMascot: Bool { Preferences.showIdleMascot }
     /// Start of the longest-running turn, for the timer in the right ear.
     private var longestTurnStart: Date? {
         store.sessions.values.filter { $0.status.isWorking }.compactMap(\.turnStartedAt).min()
-    }
-    /// Session whose task list is shown under the collapsed notch: the latest one still working through steps.
-    private var stepSession: AgentSession? {
-        store.sessions.values
-            .filter { $0.status.isActive && $0.steps.contains { $0.state != .done } }
-            .max { $0.updatedAt < $1.updatedAt }
     }
     /// Most recently used agent (Claude before any session exists).
     private var idleAgent: AgentKind {
@@ -46,7 +41,7 @@ struct NotchRootView: View {
     /// Full ears share one width so the notch cut-out stays centered. In idle only the left ear exists
     /// (smaller) and the whole shape shifts left, so it never covers menu bar icons right of the notch.
     private var leftEarWidth: CGFloat { isIdle ? (showsIdleMascot ? mascotSize + 18 : 0) : earWidth }
-    private var rightEarWidth: CGFloat { isIdle ? 0 : earWidth }
+    private var rightEarWidth: CGFloat { isIdle ? 0 : max(earWidth, vercel.active ? 140 : 0) }
     private var shiftX: CGFloat { expanded ? 0 : (rightEarWidth - leftEarWidth) / 2 }
     private var earWidth: CGFloat {
         let count = CGFloat(max(earAgents.count, 1))
@@ -79,7 +74,7 @@ struct NotchRootView: View {
         let notchH = viewModel.geometry.notchHeight
         let top = NotchLayout.topRadius
         let bodyWidth = expanded
-            ? NotchLayout.expandedWidth
+            ? min(max(NotchLayout.expandedWidth, notchW), NotchLayout.panelSize(for: viewModel.geometry).width - 2 * top)
             : notchW + leftEarWidth + rightEarWidth
 
         VStack(spacing: 0) {
@@ -93,7 +88,7 @@ struct NotchRootView: View {
             .background(NotchShape(topRadius: top, bottomRadius: expanded ? 24 : 10).fill(.black))
             // Overlay on the animated shape (not a child of the content), so the line follows the spring and never detaches.
             .overlay(alignment: .bottom) {
-                if !expanded, !workingAgents.isEmpty {
+                if !expanded && !workingAgents.isEmpty {
                     AccentLine(colors: workingAgents.map(\.color), reduceMotion: viewModel.reduceMotion)
                         .padding(.horizontal, 12 + top)
                         .padding(.bottom, 1)
@@ -109,12 +104,11 @@ struct NotchRootView: View {
             .animation(spring, value: chin)
             .animation(spring, value: store.approvals.count)
             .animation(spring, value: store.peek)
-            .animation(spring, value: stepSession?.steps)
             .animation(spring, value: viewModel.hoveredSession)
             .animation(spring, value: store.sessions.count)
             Spacer(minLength: 0)
         }
-        .frame(width: NotchLayout.panelSize.width, height: NotchLayout.panelSize.height, alignment: .top)
+        .frame(width: NotchLayout.panelSize(for: viewModel.geometry).width, height: NotchLayout.panelSize(for: viewModel.geometry).height, alignment: .top)
         .environment(\.colorScheme, .dark)
     }
 
@@ -144,11 +138,7 @@ struct NotchRootView: View {
             }
             .frame(height: notchH)
 
-            // The hardware notch hides its own height, so the peek (or the step strip) lives below it.
-            if store.peek == nil, let session = stepSession {
-                StepStrip(steps: session.steps, color: session.agent.color, reduceMotion: viewModel.reduceMotion)
-                    .transition(.opacity)
-            }
+            // The hardware notch hides its own height, so the peek lives below it.
             if let peek = store.peek {
                 Text(peek.text)
                     .font(.system(size: 11))
@@ -178,6 +168,38 @@ struct NotchRootView: View {
             Image(systemName: "checkmark")
                 .font(.system(size: 11, weight: .bold))
                 .foregroundStyle(agent.color)
+        } else if vercel.active, let deployment = vercel.deployments.first(where: { $0.status == .building })
+                    ?? vercel.deployments.first(where: { $0.status == .pending }) {
+            let accent = deployment.status == .building ? Color(hex: 0x72DCD0) : Color(hex: 0xF4C377)
+            HStack(spacing: 5) {
+                if let mascot = MascotSprites.vercel {
+                    Image(nsImage: mascot)
+                        .resizable().interpolation(.high).scaledToFit()
+                        .frame(width: 24, height: 24)
+                        .accessibilityHidden(true)
+                } else {
+                    Image(systemName: "triangle.fill")
+                        .font(.system(size: 10, weight: .semibold))
+                        .foregroundStyle(.white.opacity(0.9))
+                }
+                VStack(alignment: .leading, spacing: 1) {
+                    HStack(spacing: 4) {
+                        Text("Vercel").foregroundStyle(.white.opacity(0.9))
+                        Text(deployment.status.label).foregroundStyle(accent).lineLimit(1)
+                    }
+                    .font(.system(size: 9, weight: .semibold))
+                    Text(deployment.project)
+                        .font(.system(size: 9))
+                        .foregroundStyle(.white.opacity(0.75))
+                        .lineLimit(1)
+                    DeploymentProgress(color: accent, reduceMotion: viewModel.reduceMotion)
+                        .frame(width: 82, height: 2)
+                        .accessibilityHidden(true)
+                }
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(.horizontal, 6)
+            .accessibilityElement(children: .combine)
         } else if let start = longestTurnStart {
             TimelineView(.periodic(from: .now, by: 1)) { context in
                 Text(Formatting.clock(context.date.timeIntervalSince(start)))
@@ -200,7 +222,7 @@ struct NotchRootView: View {
                     }
                     .id(request.id)
                 } else {
-                    SessionListView(sessions: Array(store.sessions.values), reduceMotion: viewModel.reduceMotion,
+                    SessionListView(sessions: Array(store.sessions.values), deployments: vercel.deployments, reduceMotion: viewModel.reduceMotion,
                                     stats: store.todayStats, hovered: $viewModel.hoveredSession,
                                     contentHeight: $viewModel.listContentHeight)
                 }
