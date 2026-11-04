@@ -16,8 +16,9 @@ struct NotchRootView: View {
         }
     }
     /// True when nothing is happening: the ear shows one dimmed, breathing mascot instead of going dark.
+    /// Deployments are deliberately not part of this: a running build must not resize or shift the notch.
     private var isIdle: Bool {
-        activeAgents.isEmpty && store.doneFlash == nil && store.approvals.isEmpty && store.peek == nil && !vercel.active
+        activeAgents.isEmpty && store.doneFlash == nil && store.approvals.isEmpty && store.peek == nil
     }
     private var showsIdleMascot: Bool { Preferences.showIdleMascot }
     /// Start of the longest-running turn, for the timer in the right ear.
@@ -27,6 +28,10 @@ struct NotchRootView: View {
     /// Most recently used agent (Claude before any session exists).
     private var idleAgent: AgentKind {
         store.sessions.values.max { $0.updatedAt < $1.updatedAt }?.agent ?? .claude
+    }
+    /// The deployment worth a badge in the collapsed notch: what is running now, or what starts next.
+    private var runningDeployment: Deployment? {
+        vercel.deployments.first { $0.status == .building } ?? vercel.deployments.first { $0.status == .pending }
     }
 
     /// Agents shown as mascots in the left ear: the active ones plus the one that just finished.
@@ -41,7 +46,7 @@ struct NotchRootView: View {
     /// Full ears share one width so the notch cut-out stays centered. In idle only the left ear exists
     /// (smaller) and the whole shape shifts left, so it never covers menu bar icons right of the notch.
     private var leftEarWidth: CGFloat { isIdle ? (showsIdleMascot ? mascotSize + 18 : 0) : earWidth }
-    private var rightEarWidth: CGFloat { isIdle ? 0 : max(earWidth, vercel.active ? 140 : 0) }
+    private var rightEarWidth: CGFloat { isIdle ? 0 : earWidth }
     private var shiftX: CGFloat { expanded ? 0 : (rightEarWidth - leftEarWidth) / 2 }
     private var earWidth: CGFloat {
         let count = CGFloat(max(earAgents.count, 1))
@@ -118,15 +123,17 @@ struct NotchRootView: View {
         VStack(spacing: 0) {
             HStack(spacing: 0) {
                 HStack(spacing: -mascotOverlap) {
-                    ForEach(earAgents, id: \.self) { agent in
-                        MascotView(agent: agent, mood: mood(for: agent), size: mascotSize,
-                                   reduceMotion: viewModel.reduceMotion)
-                            .opacity(isIdle ? 0.75 : 1)
-                            .overlay(alignment: .topTrailing) {
-                                if awaitsUser(agent) {
-                                    Circle().fill(Color(hex: 0xFFB020)).frame(width: 7, height: 7).offset(x: 2, y: 1)
+                    if isIdle, showsIdleMascot, vercel.active { vercelBadge } else {
+                        ForEach(earAgents, id: \.self) { agent in
+                            MascotView(agent: agent, mood: mood(for: agent), size: mascotSize,
+                                       reduceMotion: viewModel.reduceMotion)
+                                .opacity(isIdle ? 0.75 : 1)
+                                .overlay(alignment: .topTrailing) {
+                                    if awaitsUser(agent) {
+                                        Circle().fill(Color(hex: 0xFFB020)).frame(width: 7, height: 7).offset(x: 2, y: 1)
+                                    }
                                 }
-                            }
+                        }
                     }
                 }
                 .frame(width: leftEarWidth)
@@ -153,6 +160,29 @@ struct NotchRootView: View {
         }
     }
 
+    /// Vercel's mascot plus a state dot, drawn in the idle mascot's slot so a running build never changes the notch's size.
+    @ViewBuilder private var vercelBadge: some View {
+        if let deployment = runningDeployment {
+            let accent = deployment.status == .building ? Color(hex: 0x72DCD0) : Color(hex: 0xF4C377)
+            Group {
+                if let mascot = MascotSprites.vercel {
+                    Image(nsImage: mascot).resizable().interpolation(.high).scaledToFit()
+                } else {
+                    Image(systemName: "triangle.fill")
+                        .font(.system(size: 10, weight: .semibold))
+                        .foregroundStyle(.white.opacity(0.9))
+                }
+            }
+            .frame(width: mascotSize, height: mascotSize)
+            .overlay(alignment: .topTrailing) {
+                Circle().fill(accent).frame(width: 7, height: 7).offset(x: 2, y: 1)
+            }
+            .accessibilityElement(children: .ignore)
+            .accessibilityLabel(Text("Vercel"))
+            .accessibilityValue(Text(deployment.status.label))
+        }
+    }
+
     @ViewBuilder private var rightEar: some View {
         if !store.approvals.isEmpty {
             Text("\(store.approvals.count)")
@@ -168,38 +198,6 @@ struct NotchRootView: View {
             Image(systemName: "checkmark")
                 .font(.system(size: 11, weight: .bold))
                 .foregroundStyle(agent.color)
-        } else if vercel.active, let deployment = vercel.deployments.first(where: { $0.status == .building })
-                    ?? vercel.deployments.first(where: { $0.status == .pending }) {
-            let accent = deployment.status == .building ? Color(hex: 0x72DCD0) : Color(hex: 0xF4C377)
-            HStack(spacing: 5) {
-                if let mascot = MascotSprites.vercel {
-                    Image(nsImage: mascot)
-                        .resizable().interpolation(.high).scaledToFit()
-                        .frame(width: 24, height: 24)
-                        .accessibilityHidden(true)
-                } else {
-                    Image(systemName: "triangle.fill")
-                        .font(.system(size: 10, weight: .semibold))
-                        .foregroundStyle(.white.opacity(0.9))
-                }
-                VStack(alignment: .leading, spacing: 1) {
-                    HStack(spacing: 4) {
-                        Text("Vercel").foregroundStyle(.white.opacity(0.9))
-                        Text(deployment.status.label).foregroundStyle(accent).lineLimit(1)
-                    }
-                    .font(.system(size: 9, weight: .semibold))
-                    Text(deployment.project)
-                        .font(.system(size: 9))
-                        .foregroundStyle(.white.opacity(0.75))
-                        .lineLimit(1)
-                    DeploymentProgress(color: accent, reduceMotion: viewModel.reduceMotion)
-                        .frame(width: 82, height: 2)
-                        .accessibilityHidden(true)
-                }
-            }
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .padding(.horizontal, 6)
-            .accessibilityElement(children: .combine)
         } else if let start = longestTurnStart {
             TimelineView(.periodic(from: .now, by: 1)) { context in
                 Text(Formatting.clock(context.date.timeIntervalSince(start)))
