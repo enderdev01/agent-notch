@@ -34,6 +34,7 @@ cleared findings.
 | F10 | Info | The Worker returns only `uid`, `name`, `state` and git metadata for production deployments of the stored team. No project list, env vars or logs. | Design property; keep it. |
 | F11 | Medium | **Personal-account installations failed.** Vercel answers the token exchange with `team_id: null` when the integration is installed on a personal account, and the Worker demanded a string, so the callback returned `502` after a successful authorization. | Fixed: a null or absent team is stored as empty and `teamId` is omitted from Vercel requests. Covered by a test. |
 | F12 | Low | The Worker called `https://api.vercel.com/v7/deployments`, which is not the endpoint in Vercel's current reference. | Fixed: uses the documented `/v6/deployments`. |
+| F13 | High | **The callback threw an unhandled exception on the edge.** `fetch(..., { redirect: 'error' })` is accepted by Node but rejected by the Workers runtime ("must be one of follow or manual"), so the token exchange failed with a Cloudflare `1101` page after a successful authorization. The Node test suite could not catch it. | Fixed: `redirect: 'manual'` plus an explicit 3xx check, a `try/catch` that answers `502` with a reason, and logs that state whether each binding is present. Add `wrangler dev` to the test pass so runtime-only rejections surface before deploy. |
 
 ## Residual risk before a public release
 

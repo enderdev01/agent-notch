@@ -85,6 +85,18 @@ test('a non-JSON authorization response answers 502 instead of throwing', async 
   } finally { globalThis.fetch = oldFetch; }
 });
 
+test('a redirect from Vercel is refused instead of followed', async () => {
+  const { session } = setup();
+  await session.fetch(req('/start', {method:'POST', headers:{'X-Pairing-Challenge':challenge}}));
+  const oldFetch = globalThis.fetch;
+  globalThis.fetch = async () => new Response(null, {status: 302, headers: {Location: 'https://evil.test/'}});
+  try {
+    const response = await session.fetch(req('/callback?code=example'));
+    assert.equal(response.status, 502);
+    assert.deepEqual(await response.json(), {error: 'Authorization failed'});
+  } finally { globalThis.fetch = oldFetch; }
+});
+
 test('deployments proxy scopes Vercel requests and never returns its token', async () => {
   const { session } = setup();
   await session.fetch(req('/start', {method:'POST', headers:{'X-Pairing-Challenge':challenge}}));
@@ -151,7 +163,8 @@ test('simulated installation stays isolated across devices and does not leak met
   }), env);
   const previousFetch = globalThis.fetch;
   globalThis.fetch = async (input, options) => {
-    assert.equal(options.redirect, 'error');
+    // Workers rejects "error"; manual is the only way to refuse redirects at the edge.
+    assert.equal(options.redirect, 'manual');
     if (new URL(input).pathname === '/v2/oauth/access_token') return Response.json({access_token:'server-secret',team_id:'team_123'});
     assert.equal(options.headers.Authorization, 'Bearer server-secret');
     return Response.json({deployments:[{uid:'dpl_1',name:'demo',state:'BUILDING',meta:{githubRepo:'repo',privateField:'sensitive'},secret:'sensitive'}],pagination:{next:null}});
