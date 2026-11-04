@@ -34,19 +34,29 @@ export class Session {
     }
     if (url.pathname === '/callback' && request.method === 'GET') {
       return this.state.blockConcurrencyWhile(async () => {
-        if (!(await storage.get('challenge')) || Date.now() > (await storage.get('expires')) || await storage.get('token')) return json({ error: 'Expired or completed' }, 400);
-        const code = url.searchParams.get('code');
-        if (!code || code.length > 1024) return json({ error: 'Invalid code' }, 400);
-        const response = await fetch('https://api.vercel.com/v2/oauth/access_token', {
-          method: 'POST', redirect: 'error', headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-          body: new URLSearchParams({ client_id: this.env.VERCEL_CLIENT_ID, client_secret: this.env.VERCEL_CLIENT_SECRET, code, redirect_uri: this.env.VERCEL_REDIRECT_URI })
-        });
-        if (!response.ok) return json({ error: 'Authorization failed' }, 502);
-        const result = await response.json();
-        // A personal account installs with team_id null; only a team install has an id to scope requests with.
-        if (typeof result.access_token !== 'string' || !result.access_token) return json({ error: 'Invalid authorization response' }, 502);
-        await storage.put({ token: result.access_token, team: typeof result.team_id === 'string' ? result.team_id : '' });
-        return new Response('Connected. Return to Agent Notch.', { headers: { 'Content-Type': 'text/plain; charset=utf-8', 'Cache-Control': 'no-store', 'Referrer-Policy': 'no-referrer', 'X-Content-Type-Options': 'nosniff', 'Content-Security-Policy': "default-src 'none'" } });
+        try {
+          if (!(await storage.get('challenge')) || Date.now() > (await storage.get('expires')) || await storage.get('token')) return json({ error: 'Expired or completed' }, 400);
+          const code = url.searchParams.get('code');
+          if (!code || code.length > 1024) return json({ error: 'Invalid code' }, 400);
+          // Log presence, never values: a missing secret is the most common cause of a failed exchange.
+          console.log('callback', { hasCode: Boolean(code), clientId: Boolean(this.env.VERCEL_CLIENT_ID), clientSecret: Boolean(this.env.VERCEL_CLIENT_SECRET), redirectUri: this.env.VERCEL_REDIRECT_URI ?? null });
+          const response = await fetch('https://api.vercel.com/v2/oauth/access_token', {
+            method: 'POST', redirect: 'error', headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: new URLSearchParams({ client_id: this.env.VERCEL_CLIENT_ID, client_secret: this.env.VERCEL_CLIENT_SECRET, code, redirect_uri: this.env.VERCEL_REDIRECT_URI })
+          });
+          console.log('token exchange', response.status);
+          if (!response.ok) return json({ error: 'Authorization failed' }, 502);
+          let result;
+          try { result = JSON.parse(await response.text()); } catch { return json({ error: 'Authorization response was not JSON' }, 502); }
+          // A personal account installs with team_id null; only a team install has an id to scope requests with.
+          if (typeof result?.access_token !== 'string' || !result.access_token) return json({ error: 'Invalid authorization response' }, 502);
+          await storage.put({ token: result.access_token, team: typeof result.team_id === 'string' ? result.team_id : '' });
+          return new Response('Connected. Return to Agent Notch.', { headers: { 'Content-Type': 'text/plain; charset=utf-8', 'Cache-Control': 'no-store', 'Referrer-Policy': 'no-referrer', 'X-Content-Type-Options': 'nosniff', 'Content-Security-Policy': "default-src 'none'" } });
+        } catch (error) {
+          // Never surface a 1101 here: the browser should show a short reason and the log keeps the stack.
+          console.log('callback failed', error?.stack ?? String(error));
+          return json({ error: 'Callback failed' }, 502);
+        }
       });
     }
     const verifier = request.headers.get('Authorization')?.replace(/^Bearer /, '') ?? '';

@@ -61,6 +61,30 @@ test('a personal account installs with team_id null and calls Vercel without tea
   } finally { globalThis.fetch = oldFetch; }
 });
 
+test('a failing token exchange answers 502 instead of throwing a 1101', async () => {
+  const { session } = setup();
+  await session.fetch(req('/start', {method:'POST', headers:{'X-Pairing-Challenge':challenge}}));
+  const oldFetch = globalThis.fetch;
+  globalThis.fetch = async () => { throw new TypeError('network down'); };
+  try {
+    const response = await session.fetch(req('/callback?code=example'));
+    assert.equal(response.status, 502);
+    assert.deepEqual(await response.json(), {error: 'Callback failed'});
+  } finally { globalThis.fetch = oldFetch; }
+});
+
+test('a non-JSON authorization response answers 502 instead of throwing', async () => {
+  const { session } = setup();
+  await session.fetch(req('/start', {method:'POST', headers:{'X-Pairing-Challenge':challenge}}));
+  const oldFetch = globalThis.fetch;
+  globalThis.fetch = async () => new Response('<html>nope</html>', {status: 200, headers: {'Content-Type': 'text/html'}});
+  try {
+    const response = await session.fetch(req('/callback?code=example'));
+    assert.equal(response.status, 502);
+    assert.deepEqual(await response.json(), {error: 'Authorization response was not JSON'});
+  } finally { globalThis.fetch = oldFetch; }
+});
+
 test('deployments proxy scopes Vercel requests and never returns its token', async () => {
   const { session } = setup();
   await session.fetch(req('/start', {method:'POST', headers:{'X-Pairing-Challenge':challenge}}));
