@@ -11,7 +11,7 @@ struct SessionListViewTests {
     }
 
     private func view(_ sessions: [AgentSession]) -> SessionListView {
-        SessionListView(sessions: sessions, reduceMotion: true, stats: { _ in nil },
+        SessionListView(sessions: sessions, deployments: [], reduceMotion: true, stats: { _ in nil },
                         hovered: .constant(nil), contentHeight: .constant(0))
     }
 
