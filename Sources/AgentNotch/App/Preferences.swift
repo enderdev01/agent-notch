@@ -13,6 +13,11 @@ enum Preferences {
         get { bool("soundOnApproval", true) }
         set { save(newValue, "soundOnApproval") }
     }
+    /// Notify when a Vercel deployment reaches a terminal state. Off by default: a build finishing is not your turn.
+    static var vercelNotificationsEnabled: Bool {
+        get { bool("vercelNotificationsEnabled", false) }
+        set { save(newValue, "vercelNotificationsEnabled") }
+    }
     /// 0...1, applied on top of the system volume.
     static var soundVolume: Float {
         get { Float(number("soundVolume", 0.3)) }
