@@ -24,7 +24,7 @@
 
 Agent Notch convierte el notch del MacBook en un panel en vivo para tus agentes de programación con IA. Ve qué está haciendo cada agente, sigue su lista de tareas paso a paso y **permite o deniega** las solicitudes de permiso sin salir de lo que estás haciendo. Cuando un agente termina, ves su respuesta; cuando te necesita, el notch te lo indica.
 
-Funciona en local, solo escucha en `127.0.0.1` y no envía nada a ningún sitio.
+Funciona en local y solo escucha en `127.0.0.1`. Nunca envía tu actividad de agentes a ningún sitio: la única petición saliente que puede hacer la app es la conexión opcional a Vercel de abajo, y solo después de que la inicies tú.
 
 > La app se muestra en español, inglés o alemán según el idioma del sistema, o el que elijas en el ítem de la barra de menús (Idioma). Las capturas de este README muestran la interfaz en inglés (Allow, Deny, Copy reply, Your turn…); en español son Permitir, Denegar, Copiar respuesta y Tu turno.
 
@@ -125,6 +125,14 @@ Mientras trabaja, Gentle Shell también muestra la fase que reporta con `gentle_
 | <img src="Sources/AgentNotch/Resources/Mascots/gentle-work-close.png" alt="Closing" width="56"> | Closing | Cierra el turno. |
 
 </details>
+
+### Deployments de Vercel (opcional)
+
+Agent Notch puede mostrar los despliegues de producción de los proyectos de Vercel que vea tu integración. Está apagado hasta que elijas **Connect Vercel…**: antes de eso el ítem del menú está oculto y la app no hace ninguna petición de red.
+
+Al conectar, la app guarda una credencial de dispositivo en el Llavero y habla solo con el Worker de Agent Notch. El Worker custodia el client secret de la integración y lo canjea por un token de Vercel con permiso solo de lectura de deployments; ese token nunca llega a tu Mac. La app pide únicamente acceso de lectura a deployments y no envía prompts, código, datos de sesión ni rutas de archivos.
+
+**Disconnect** borra la credencial local. Para revocar también el acceso de la integración, elimínala en Vercel; el diálogo lo indica. Las notificaciones de deployments están apagadas por defecto y, cuando se activan, llegan en silencio.
 
 ## Compatible con
 

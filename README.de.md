@@ -24,7 +24,7 @@
 
 Agent Notch macht den Notch des MacBooks zu einem Live-Dashboard für Ihre KI-Coding-Agenten. Sie sehen, was jeder Agent gerade tut, verfolgen seine Aufgabenliste Schritt für Schritt und **erlauben oder verweigern** Berechtigungsanfragen, ohne Ihre aktuelle Arbeit zu verlassen. Wenn ein Agent fertig ist, sehen Sie seine Antwort; wenn er Sie braucht, sagt der Notch es Ihnen.
 
-Alles läuft lokal, der Server lauscht nur auf `127.0.0.1`, und es werden keine Daten irgendwohin gesendet.
+Alles läuft lokal und der Server lauscht nur auf `127.0.0.1`. Deine Agent-Aktivität wird nirgendwohin gesendet: Die einzige ausgehende Anfrage der App ist die optionale Vercel-Verbindung weiter unten, und nur nachdem du sie selbst gestartet hast.
 
 > Die App erscheint je nach Systemsprache auf Englisch, Spanisch oder Deutsch, oder in der Sprache, die im Menüleistenelement gewählt wird (Sprache). Die Screenshots in dieser README zeigen die englische Oberfläche (Allow, Deny, Copy reply, Your turn …); auf Deutsch heißen sie Erlauben, Verweigern, Antwort kopieren und Sie sind dran.
 
@@ -125,6 +125,14 @@ Während der Arbeit zeigt Gentle Shell auch die Phase, die es mit `gentle_odd_ph
 | <img src="Sources/AgentNotch/Resources/Mascots/gentle-work-close.png" alt="Closing" width="56"> | Closing | Schließt den Durchlauf ab. |
 
 </details>
+
+### Vercel-Deployments (optional)
+
+Agent Notch kann Produktions-Deployments der Vercel-Projekte anzeigen, die deine Integration sieht. Es ist ausgeschaltet, bis du **Connect Vercel…** wählst: davor ist der Menüeintrag verborgen und die App stellt keine Netzwerkanfragen.
+
+Beim Verbinden legt die App eine Geräte-Anmeldeinformation im Schlüsselbund ab und spricht nur mit dem Agent-Notch-Worker. Der Worker verwahrt das Client Secret der Integration und tauscht es gegen ein Vercel-Token mit Lesezugriff auf Deployments; dieses Token erreicht deinen Mac nie. Die App fragt ausschließlich Lesezugriff auf Deployments an und sendet keine Prompts, keinen Code, keine Sitzungsdaten und keine Dateipfade.
+
+**Disconnect** entfernt die lokale Anmeldeinformation. Um auch den Zugriff der Integration zu widerrufen, entferne sie in Vercel; der Dialog sagt es. Deployment-Benachrichtigungen sind standardmäßig aus und kommen, wenn aktiviert, lautlos.
 
 ## Kompatibel mit
 
