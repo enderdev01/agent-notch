@@ -19,6 +19,6 @@ Show production deployments from every project available to a Vercel integration
 
 ## Current status
 
-An unreleased Worker and desktop prototype exist, with local pairing, polling, UI, notification code, and mocked tests. The Worker URL is unset and the Vercel menu is hidden. The integration form is not submitted. Security review, real installation, deployment, and end-to-end verification remain required; see `integrations/vercel-worker/README.md` before any deployment.
+An unreleased Worker and desktop prototype exist, with local pairing, polling, UI, notification code, and mocked tests. The Worker URL is unset and the Vercel menu is hidden. The integration form is not submitted. A review of the pairing flow is in `docs/vercel-security-review.md` (not independent), the privacy wording to ship with it is drafted in `docs/vercel-privacy.md`, and the Worker URL is injected at packaging time with `VERCEL_WORKER_URL`. Independent review, real installation, deployment, and end-to-end verification remain required; see `integrations/vercel-worker/README.md` before any deployment.
 
 References: [Vercel integration authorization](https://vercel.com/docs/integrations/create-integration/vercel-api-integrations), [Vercel integration registration](https://vercel.com/docs/integrations/create-integration/submit-integration), [Cloudflare Worker secrets](https://developers.cloudflare.com/workers/configuration/secrets/).
