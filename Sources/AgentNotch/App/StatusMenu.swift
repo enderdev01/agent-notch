@@ -18,6 +18,7 @@ final class StatusMenu: NSObject {
     private let languageItem = NSMenuItem(title: L("Language"), action: nil, keyEquivalent: "")
     private let vercelItem = NSMenuItem(title: L("Connect Vercel…"), action: nil, keyEquivalent: "")
     private let vercelStatusItem = NSMenuItem(title: "", action: nil, keyEquivalent: "")
+    private let vercelNotifyItem = NSMenuItem(title: L("Notify when a Vercel deployment finishes"), action: nil, keyEquivalent: "")
 
     private static let volumeChoices: [(title: String, value: Double)] = [(L("Quiet"), 0.15), (L("Normal"), 0.3), (L("Loud"), 0.6)]
     private static let sleepChoices: [(title: String, value: Double)] = [(L("30 seconds"), 30), (L("1 minute"), 60), (L("3 minutes"), 180)]
@@ -50,7 +51,8 @@ final class StatusMenu: NSObject {
         let connect = NSMenuItem(title: L("Connect agents…"), action: #selector(connectAgents), keyEquivalent: "")
         connect.target = self
         vercelItem.target = self; vercelItem.action = #selector(connectVercel)
-        [connect, vercelItem, vercelStatusItem, .separator(), pauseItem, .separator(), soundItem, approvalSoundItem, volumeItem, .separator(), idleItem, sleepItem,
+        vercelNotifyItem.target = self; vercelNotifyItem.action = #selector(toggleVercelNotifications)
+        [connect, vercelItem, vercelStatusItem, .separator(), pauseItem, .separator(), soundItem, approvalSoundItem, volumeItem, vercelNotifyItem, .separator(), idleItem, sleepItem,
          yourTurnItem, .separator(), languageItem, loginItem, .separator(), quit].forEach(menu.addItem)
         menu.delegate = self
         item.menu = menu
@@ -109,6 +111,8 @@ final class StatusMenu: NSObject {
     }
 
     @objc private func toggleSound() { Preferences.soundEnabled.toggle() }
+
+    @objc private func toggleVercelNotifications() { Preferences.vercelNotificationsEnabled.toggle() }
 
     @objc private func toggleLogin() {
         do {
@@ -171,6 +175,8 @@ extension StatusMenu: NSMenuDelegate {
         vercelItem.isHidden = !vercel.configured
         vercelStatusItem.isHidden = !vercel.configured || vercel.error == nil
         vercelStatusItem.title = vercel.error ?? ""
+        vercelNotifyItem.isHidden = !vercel.configured
+        vercelNotifyItem.state = Preferences.vercelNotificationsEnabled ? .on : .off
         soundItem.state = Preferences.soundEnabled ? .on : .off
         approvalSoundItem.state = Preferences.approvalSoundEnabled ? .on : .off
         idleItem.state = Preferences.showIdleMascot ? .on : .off

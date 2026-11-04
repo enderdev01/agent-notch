@@ -88,3 +88,4 @@
 "Ready" = "Listo";
 "Canceled" = "Cancelado";
 "Unknown" = "Desconocido";
+"Notify when a Vercel deployment finishes" = "Notificarme cuando termine un despliegue de Vercel";

@@ -4,7 +4,7 @@ import AppKit
 final class AppDelegate: NSObject, NSApplicationDelegate {
     private let store = SessionStore()
     private let viewModel = NotchViewModel()
-    private let vercel = VercelMonitor()
+    private let vercel = VercelMonitor(notificationsEnabled: { Preferences.vercelNotificationsEnabled })
     private var server: HookServer?
     private var panelController: NotchPanelController?
     private var statusMenu: StatusMenu?

@@ -22,8 +22,11 @@ final class VercelMonitor: ObservableObject {
     private let worker: URL?
     private let slug: String
     private let session = URLSession(configuration: .ephemeral, delegate: NoRedirects(), delegateQueue: nil)
+    /// Whether a finished deployment may post a notification. Injected by the app layer: this monitor reads no preferences.
+    private let notificationsEnabled: () -> Bool
 
-    init() {
+    init(notificationsEnabled: @escaping () -> Bool = { false }) {
+        self.notificationsEnabled = notificationsEnabled
         if let raw = Bundle.main.object(forInfoDictionaryKey: "VercelWorkerURL") as? String,
            let url = URL(string: raw), url.scheme == "https", url.host != nil { worker = url }
         else { worker = nil }
@@ -114,11 +117,14 @@ final class VercelMonitor: ObservableObject {
 
     private func notify(_ deployment: Deployment) async {
         guard Bundle.main.bundleURL.pathExtension == "app" else { return }
+        guard notificationsEnabled() else { return }
         let center = UNUserNotificationCenter.current()
-        guard (try? await center.requestAuthorization(options: [.alert, .sound])) == true else { return }
+        guard (try? await center.requestAuthorization(options: [.alert])) == true else { return }
         let content = UNMutableNotificationContent()
         content.title = "Vercel · \(deployment.project)"
         content.body = [deployment.status.label, deployment.repository, deployment.commit, deployment.author].compactMap { $0 }.joined(separator: " · ")
+        // A build finishing is ambient news, not the user's turn: deliver it passively, with no sound or banner that demands attention.
+        content.interruptionLevel = .passive
         try? await center.add(UNNotificationRequest(identifier: "vercel-\(deployment.id)", content: content, trigger: nil))
     }
 
