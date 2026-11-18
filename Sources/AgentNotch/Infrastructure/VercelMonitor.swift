@@ -86,13 +86,20 @@ final class VercelMonitor: ObservableObject {
         task?.cancel()
         // The user asked for this, so bring the app forward: the Keychain prompt is unusable while the app is not active.
         NSApp.activate(ignoringOtherApps: true)
-        guard let credentials = load() else { paired = false; return }
+        guard let credentials = load() else { markPaired(false); return }
         task = Task {
             do {
                 _ = try await request("disconnect", credentials: credentials, method: "POST")
-                deleteCredentials()
-                connected = false; deployments = []; tracker = DeploymentTracker(); error = nil
-            } catch { self.error = error.localizedDescription }
+            } catch MonitorError.expired {
+                // The worker already dropped the session: finishing locally is all that is left.
+            } catch {
+                // Still paired: keep polling in this same task so start() and connect() stay consistent with it.
+                self.error = error.localizedDescription
+                await poll(credentials)
+                return
+            }
+            deleteCredentials()
+            connected = false; deployments = []; tracker = DeploymentTracker(); error = nil
         }
     }
 
